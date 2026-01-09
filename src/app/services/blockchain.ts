@@ -25,56 +25,73 @@ export class Blockchain {
   }
 
   private initializeMockTransactions(): void {
+    // Define um pequeno conjunto de carteiras "seed" que irão interagir
+    const seedWallets = [
+      '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+      'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+      '3J98t1WpEZ73CNmYviecrnyiWrnqRhWNLy',
+      '1BoatSLRHtKNngkdXEeobR76b53LETtpyT',
+    ];
+
     const mockTransactions: Transaction[] = [
+      // Transações circulares entre as carteiras seed (mais realistas)
       {
         id: '1',
-        sender: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
-        receiver: '3J98t1WpEZ73CNmYviecrnyiWrnqRhWNLy',
+        sender: seedWallets[0],
+        receiver: seedWallets[1],
         amount: 0.5,
         fee: 0.0001,
       },
       {
         id: '2',
-        sender: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
-        receiver: '1BoatSLRHtKNngkdXEeobR76b53LETtpyT',
+        sender: seedWallets[1],
+        receiver: seedWallets[2],
         amount: 1.2,
         fee: 0.0002,
       },
       {
         id: '3',
-        sender: '3FZbgi29cpjq2GjdwV8eyHuJJnkLtktZc5',
-        receiver: '1dice8EMZmqKvrGE4Qc9bUFf9PX3xaYDp',
+        sender: seedWallets[2],
+        receiver: seedWallets[3],
         amount: 0.025,
         fee: 0.00005,
       },
       {
         id: '4',
-        sender: 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
-        receiver: '3E8ociqZa9mZUSwGdSmAEMAoAxBK3FNDcd',
+        sender: seedWallets[3],
+        receiver: seedWallets[0],
         amount: 2.5,
         fee: 0.0003,
       },
-      // temp
+      // Transações adicionais criando mais fluxo entre existentes
       {
         id: '5',
-        sender: '1FfmbHfnpaZjKFvyi1okTjJJusN455paPH',
-        receiver: '1J6PYEzr4CUoGbnXrELyHszoTSz3wCsCaj',
+        sender: seedWallets[0],
+        receiver: seedWallets[2],
         amount: 0.75,
         fee: 0.00015,
       },
       {
         id: '6',
-        sender: '3Cbq7aT1tY8kMxWLbitaG7yT6bPbKChq64',
-        receiver: 'bc1q5cyxnuxmeuwuvkwfem96lly9p6un9g3h5k7f3g',
+        sender: seedWallets[1],
+        receiver: seedWallets[3],
         amount: 0.1,
         fee: 0.00005,
       },
       {
         id: '7',
-        sender: '1Ez69SnzzmePmZX3WpEzMKTrcBF2gpNQ55',
-        receiver: '3Ai1JZ8pdJb2ksieUV8FsxSNVJCpoPi8W6',
+        sender: seedWallets[3],
+        receiver: seedWallets[1],
         amount: 3.0,
         fee: 0.00025,
+      },
+      // Uma transação para um novo endereço
+      {
+        id: '8',
+        sender: seedWallets[2],
+        receiver: '3FZbgi29cpjq2GjdwV8eyHuJJnkLtktZc5',
+        amount: 0.5,
+        fee: 0.0001,
       },
     ];
     this.mempool.set(mockTransactions);
@@ -107,6 +124,13 @@ export class Blockchain {
       const newPool = [...pool, transaction];
       return this.prioritizeMempoolByFee() ? this.sortMempoolByFee(newPool) : newPool;
     });
+  }
+
+  // Valida se uma transação pode ser realizada (sender tem fundos suficientes)
+  canMakeTransaction(transaction: Transaction): boolean {
+    const balance = this.getBalance(transaction.sender);
+    const requiredAmount = transaction.amount + transaction.fee;
+    return balance >= requiredAmount;
   }
 
   private sortMempoolByFee(transactions: Transaction[]): Transaction[] {
@@ -245,6 +269,20 @@ export class Blockchain {
     }
 
     return Array.from(addresses);
+  }
+
+  // Obtém carteiras ativas com saldo positivo
+  getActiveWallets(): { address: string; balance: number }[] {
+    const addresses = this.getAllAddresses();
+    const wallets = addresses
+      .map((address) => ({
+        address,
+        balance: this.getBalance(address),
+      }))
+      .filter((w) => w.balance > 0)
+      .sort((a, b) => b.balance - a.balance);
+
+    return wallets;
   }
 
   // Valida toda a blockchain

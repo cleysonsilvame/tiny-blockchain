@@ -32,6 +32,7 @@ export class MempoolSidebar implements OnDestroy {
   fee = signal<string>('0.0001');
   autoGenerate = signal<boolean>(false);
   autoGenerateInterval = signal<number>(5000);
+  generationMode = signal<'realistic' | 'random'>('realistic'); // Modo de geração
   private autoGenerateTimer?: number;
   private txCounter = 1;
 
@@ -67,9 +68,46 @@ export class MempoolSidebar implements OnDestroy {
     return address;
   }
 
+  // Seleciona um remetente realista (com saldo positivo) ou aleatório
+  selectSender(): string {
+    if (this.generationMode() === 'realistic') {
+      const activeWallets = this.blockchainService.getActiveWallets();
+      
+      // Se não houver carteiras ativas, usa aleatório
+      if (activeWallets.length === 0) {
+        return this.generateRandomAddress();
+      }
+
+      // 80% chance de usar carteira ativa, 20% chance de novo endereço
+      if (Math.random() < 0.8) {
+        const wallet = activeWallets[Math.floor(Math.random() * activeWallets.length)];
+        return wallet.address;
+      }
+    }
+    
+    return this.generateRandomAddress();
+  }
+
+  // Seleciona um destinatário (prefere carteiras diferentes do sender)
+  selectReceiver(sender: string): string {
+    if (this.generationMode() === 'realistic') {
+      const allAddresses = this.blockchainService.getAllAddresses();
+      const otherAddresses = allAddresses.filter((addr) => addr !== sender);
+      
+      // Se há outros endereços na blockchain, prefere um deles
+      if (otherAddresses.length > 0 && Math.random() < 0.6) {
+        return otherAddresses[Math.floor(Math.random() * otherAddresses.length)];
+      }
+    }
+    
+    return this.generateRandomAddress();
+  }
+
   fillRandomData(): void {
-    this.sender.set(this.generateRandomAddress());
-    this.receiver.set(this.generateRandomAddress());
+    const sender = this.selectSender();
+    const receiver = this.selectReceiver(sender);
+    this.sender.set(sender);
+    this.receiver.set(receiver);
     this.amount.set((Math.random() * 5).toFixed(3));
     this.fee.set((Math.random() * 0.001).toFixed(6));
   }
@@ -109,13 +147,26 @@ export class MempoolSidebar implements OnDestroy {
 
   startAutoGeneration(): void {
     this.autoGenerateTimer = setInterval(() => {
+      const sender = this.selectSender();
+      const receiver = this.selectReceiver(sender);
+      const amount = parseFloat((Math.random() * 5).toFixed(3));
+      const fee = parseFloat((Math.random() * 0.001).toFixed(6));
+
       const newTx: Transaction = {
         id: `auto-${Date.now()}-${Math.random()}`,
-        sender: this.generateRandomAddress(),
-        receiver: this.generateRandomAddress(),
-        amount: parseFloat((Math.random() * 5).toFixed(3)),
-        fee: parseFloat((Math.random() * 0.001).toFixed(6)),
+        sender,
+        receiver,
+        amount,
+        fee,
       };
+
+      // Em modo realista, valida se o sender tem fundos
+      if (this.generationMode() === 'realistic') {
+        if (!this.blockchainService.canMakeTransaction(newTx)) {
+          return; // Ignora transação se não tiver fundos
+        }
+      }
+
       this.blockchainService.addTransaction(newTx);
     }, this.autoGenerateInterval());
   }
@@ -132,6 +183,10 @@ export class MempoolSidebar implements OnDestroy {
       this.stopAutoGeneration();
       this.startAutoGeneration();
     }
+  }
+
+  toggleGenerationMode(): void {
+    this.generationMode.update((mode) => (mode === 'realistic' ? 'random' : 'realistic'));
   }
 
   @HostListener('document:click')

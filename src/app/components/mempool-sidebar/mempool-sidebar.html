@@ -209,6 +209,25 @@
                 <div class="text-xs text-slate-400 mt-0.5">Entre 1 e 60 segundos</div>
               </div>
 
+              <div class="mb-3">
+                <label class="block text-slate-300 text-xs mb-2">Modo de Geração</label>
+                <button
+                  (click)="toggleGenerationMode()"
+                  [class.bg-blue-600]="generationMode() === 'realistic'"
+                  [class.bg-slate-600]="generationMode() === 'random'"
+                  class="w-full text-white py-1.5 rounded-md text-xs font-medium transition-colors"
+                >
+                  {{ generationMode() === 'realistic' ? '🎯 Realista' : '🎲 Aleatório' }}
+                </button>
+                <p class="text-xs text-slate-400 mt-1.5">
+                  @if (generationMode() === 'realistic') {
+                    Usa carteiras com saldo existente (80%) + novos endereços (20%)
+                  } @else {
+                    Gera endereços completamente aleatórios
+                  }
+                </p>
+              </div>
+
               <button
                 (click)="toggleAutoGenerate()"
                 [class.bg-red-600]="autoGenerate()"
