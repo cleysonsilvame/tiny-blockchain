@@ -1,17 +1,16 @@
 <div class="bg-slate-800 p-6 shadow-2xl h-full">
-
   <div class="flex items-center gap-3 mb-6">
     <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <rect x="4" y="4" width="16" height="16" rx="2" ry="2"/>
-      <rect x="9" y="9" width="6" height="6"/>
-      <line x1="9" y1="1" x2="9" y2="4"/>
-      <line x1="15" y1="1" x2="15" y2="4"/>
-      <line x1="9" y1="20" x2="9" y2="23"/>
-      <line x1="15" y1="20" x2="15" y2="23"/>
-      <line x1="20" y1="9" x2="23" y2="9"/>
-      <line x1="20" y1="14" x2="23" y2="14"/>
-      <line x1="1" y1="9" x2="4" y2="9"/>
-      <line x1="1" y1="14" x2="4" y2="14"/>
+      <rect x="4" y="4" width="16" height="16" rx="2" ry="2" />
+      <rect x="9" y="9" width="6" height="6" />
+      <line x1="9" y1="1" x2="9" y2="4" />
+      <line x1="15" y1="1" x2="15" y2="4" />
+      <line x1="9" y1="20" x2="9" y2="23" />
+      <line x1="15" y1="20" x2="15" y2="23" />
+      <line x1="20" y1="9" x2="23" y2="9" />
+      <line x1="20" y1="14" x2="23" y2="14" />
+      <line x1="1" y1="9" x2="4" y2="9" />
+      <line x1="1" y1="14" x2="4" y2="14" />
     </svg>
     <h2 class="text-2xl font-semibold text-white">Block #{{ blockNumber }}</h2>
 
@@ -23,209 +22,242 @@
   </div>
 
   <div class="space-y-4">
-  <!-- Fork Selection -->
-  @if (availableForks().length > 1) {
+    <!-- Fork Selection -->
+    @if (availableForks().length > 1) {
+      <div class="bg-slate-900 border border-slate-700 rounded-lg p-4">
+        <div class="text-sm font-semibold text-white mb-3">Selecionar Fork para Minerar</div>
+        <select
+          [(ngModel)]="selectedForkId"
+          [disabled]="isMining() || isRacing()"
+          class="w-full bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          @for (fork of availableForks(); track fork.id) {
+            <option [value]="fork.id">
+              {{ fork.name }}
+              @if (fork.isMainChain) {
+                ⭐ ({{ fork.chain.length }} blocos)
+              } @else {
+                ({{ fork.chain.length }} blocos)
+              }
+            </option>
+          }
+        </select>
+        <p class="text-xs text-slate-400 mt-2">
+          O bloco minerado será adicionado ao fork selecionado
+        </p>
+      </div>
+    }
+
+    <!-- Mining Mode Toggle -->
     <div class="bg-slate-900 border border-slate-700 rounded-lg p-4">
-      <div class="text-sm font-semibold text-white mb-3">Selecionar Fork para Minerar</div>
-      <select
-        [(ngModel)]="selectedForkId"
-        [disabled]="isMining() || isRacing()"
-        class="w-full bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-        @for (fork of availableForks(); track fork.id) {
-          <option [value]="fork.id">
-            {{ fork.name }}
-            @if (fork.isMainChain) {
-              ⭐ ({{ fork.chain.length }} blocos)
-            } @else {
-              ({{ fork.chain.length }} blocos)
-            }
-          </option>
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-sm font-semibold text-white">Modo de Mineração</div>
+        <button
+          (click)="toggleMiningMode()"
+          [disabled]="isMining() || isRacing()"
+          class="px-4 py-2 rounded-lg font-medium text-sm transition-all"
+          [class]="
+            miningMode() === 'single'
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-purple-600 text-white hover:bg-purple-700'
+          "
+          [class.opacity-50]="isMining() || isRacing()"
+          [class.cursor-not-allowed]="isMining() || isRacing()"
+        >
+          {{ miningMode() === 'single' ? '👤 Solo' : '🏁 Competição' }}
+        </button>
+      </div>
+      <p class="text-xs text-slate-400">
+        @if (miningMode() === 'single') {
+          Você minera sozinho com controle manual
+        } @else {
+          Múltiplos mineradores competem pelo bloco
         }
-      </select>
-      <p class="text-xs text-slate-400 mt-2">
-        O bloco minerado será adicionado ao fork selecionado
       </p>
     </div>
-  }
 
-  <!-- Mining Mode Toggle -->
-  <div class="bg-slate-900 border border-slate-700 rounded-lg p-4">
-    <div class="flex items-center justify-between mb-3">
-      <div class="text-sm font-semibold text-white">Modo de Mineração</div>
-      <button
-        (click)="toggleMiningMode()"
-        [disabled]="isMining() || isRacing()"
-        class="px-4 py-2 rounded-lg font-medium text-sm transition-all"
-        [class]="miningMode() === 'single'
-          ? 'bg-blue-600 text-white hover:bg-blue-700'
-          : 'bg-purple-600 text-white hover:bg-purple-700'"
-        [class.opacity-50]="isMining() || isRacing()"
-        [class.cursor-not-allowed]="isMining() || isRacing()">
-        {{ miningMode() === 'single' ? '👤 Solo' : '🏁 Competição' }}
-      </button>
-    </div>
-    <p class="text-xs text-slate-400">
-      @if (miningMode() === 'single') {
-        Você minera sozinho com controle manual
-      } @else {
-        Múltiplos mineradores competem pelo bloco
-      }
-    </p>
-  </div>
+    <!-- Mining Race Panel (only in race mode)  TODO: ajustar padding-->
+    @if (miningMode() === 'race') {
+      <app-mining-race></app-mining-race>
+    }
 
-  <!-- Mining Race Panel (only in race mode)  TODO: ajustar padding-->
-  @if (miningMode() === 'race') {
-    <app-mining-race></app-mining-race>
-  }
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="space-y-4">
+        <div>
+          <label for="blockNumber" class="block text-slate-300 mb-2 text-sm">Block Number</label>
+          <input
+            id="blockNumber"
+            type="number"
+            [value]="blockNumber"
+            disabled
+            class="w-full bg-slate-700 border border-slate-600 text-white font-mono rounded-md px-3 py-2"
+          />
+        </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="space-y-4">
-      <div>
-        <label class="block text-slate-300 mb-2 text-sm">Block Number</label>
-        <input
-          type="number"
-          [value]="blockNumber"
-          disabled
-          class="w-full bg-slate-700 border border-slate-600 text-white font-mono rounded-md px-3 py-2">
+        <div>
+          <label for="nonce" class="block text-slate-300 mb-2 text-sm">Nonce</label>
+          <input
+            id="nonce"
+            type="number"
+            [value]="nonce()"
+            (input)="onNonceChange($any($event.target).value)"
+            class="w-full bg-slate-700 border border-slate-600 text-white font-mono rounded-md px-3 py-2"
+          />
+        </div>
+
+        <div>
+          <label for="data" class="block text-slate-300 mb-2 text-sm">Data</label>
+          <textarea
+            id="data"
+            [value]="data()"
+            (input)="onDataChange($any($event.target).value)"
+            class="w-full bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 min-h-24"
+            placeholder="Enter block data..."
+          >
+          </textarea>
+        </div>
       </div>
 
-      <div>
-        <label class="block text-slate-300 mb-2 text-sm">Nonce</label>
-        <input
-          type="number"
-          [value]="nonce()"
-          (input)="onNonceChange($any($event.target).value)"
-          class="w-full bg-slate-700 border border-slate-600 text-white font-mono rounded-md px-3 py-2">
-      </div>
-
-      <div>
-        <label class="block text-slate-300 mb-2 text-sm">Data</label>
-        <textarea
-          [value]="data()"
-          (input)="onDataChange($any($event.target).value)"
-          class="w-full bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 min-h-24"
-          placeholder="Enter block data...">
-        </textarea>
-      </div>
-    </div>
-
-    <div class="space-y-4">
-      <div>
-        <div class="flex items-center gap-2 mb-2">
-          <label class="block text-slate-300 text-sm">Transações Pendentes ({{ pendingTransactions.length }})</label>
-
-          <!-- Rewards Info Icon with Tooltip -->
-          <div class="relative">
-            <button
-              (mouseenter)="showRewardTooltip.set(true)"
-              (mouseleave)="showRewardTooltip.set(false)"
-              class="flex items-center justify-center w-6 h-6 rounded-full bg-purple-700/50 hover:bg-purple-600/50 text-purple-200 transition-all"
-              type="button"
+      <div class="space-y-4">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="block text-slate-300 text-sm"
+              >Transações Pendentes ({{ pendingTransactions.length }})</span
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </button>
 
-            <!-- Tooltip -->
-            @if (showRewardTooltip()) {
-              <div class="fixed bottom-auto right-auto z-[100] w-80 px-4 py-3 text-sm text-white bg-slate-800 rounded-lg shadow-xl border border-slate-600"
-                   style="transform: translate(-100%, -100%); margin-top: -8px;">
-                <div class="mb-3">
-                  <div class="text-purple-300 font-semibold mb-2">💰 Recompensas de Mineração</div>
-                  <div class="space-y-2 text-xs">
-                    <div class="flex justify-between text-slate-300">
-                      <span>Recompensa Base:</span>
-                      <span class="font-mono text-white">{{ blockReward().toFixed(4) }} BTC</span>
+            <!-- Rewards Info Icon with Tooltip -->
+            <div class="relative">
+              <button
+                (mouseenter)="showRewardTooltip.set(true)"
+                (mouseleave)="showRewardTooltip.set(false)"
+                class="flex items-center justify-center w-6 h-6 rounded-full bg-purple-700/50 hover:bg-purple-600/50 text-purple-200 transition-all"
+                type="button"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </button>
+
+              <!-- Tooltip -->
+              @if (showRewardTooltip()) {
+                <div
+                  class="fixed bottom-auto right-auto z-[100] w-80 px-4 py-3 text-sm text-white bg-slate-800 rounded-lg shadow-xl border border-slate-600"
+                  style="transform: translate(-100%, -100%); margin-top: -8px"
+                >
+                  <div class="mb-3">
+                    <div class="text-purple-300 font-semibold mb-2">
+                      💰 Recompensas de Mineração
                     </div>
-                    <div class="flex justify-between text-slate-300">
-                      <span>Taxas das Transações:</span>
-                      <span class="font-mono text-white">{{ totalFees().toFixed(6) }} BTC</span>
-                    </div>
-                    <div class="border-t border-slate-600 pt-2 mt-2"></div>
-                    <div class="flex justify-between text-emerald-400 font-semibold">
-                      <span>Total a Receber:</span>
-                      <span class="font-mono">{{ totalReward().toFixed(6) }} BTC</span>
+                    <div class="space-y-2 text-xs">
+                      <div class="flex justify-between text-slate-300">
+                        <span>Recompensa Base:</span>
+                        <span class="font-mono text-white">{{ blockReward().toFixed(4) }} BTC</span>
+                      </div>
+                      <div class="flex justify-between text-slate-300">
+                        <span>Taxas das Transações:</span>
+                        <span class="font-mono text-white">{{ totalFees().toFixed(6) }} BTC</span>
+                      </div>
+                      <div class="border-t border-slate-600 pt-2 mt-2"></div>
+                      <div class="flex justify-between text-emerald-400 font-semibold">
+                        <span>Total a Receber:</span>
+                        <span class="font-mono">{{ totalReward().toFixed(6) }} BTC</span>
+                      </div>
                     </div>
                   </div>
+                  <div class="border-t border-slate-600 pt-2 text-xs text-slate-400">
+                    <p>
+                      O minerador recebe a recompensa base mais as taxas de todas as transações
+                      incluídas no bloco.
+                    </p>
+                  </div>
                 </div>
-                <div class="border-t border-slate-600 pt-2 text-xs text-slate-400">
-                  <p>O minerador recebe a recompensa base mais as taxas de todas as transações incluídas no bloco.</p>
+              }
+            </div>
+          </div>
+          @if (pendingTransactions.length === 0) {
+            <div
+              class="bg-slate-700 border border-slate-600 rounded-lg p-4 text-slate-400 text-sm text-center"
+            >
+              Nenhuma transação no mempool
+            </div>
+          } @else {
+            <div class="bg-slate-700 border border-slate-600 rounded-lg p-3 space-y-2">
+              @for (tx of pendingTransactions.slice(0, 4); track tx.id) {
+                <div class="bg-slate-800 rounded p-2 text-xs">
+                  <div class="text-blue-300 font-mono truncate">
+                    {{ tx.sender.slice(0, 12) }}...
+                  </div>
+                  <div class="text-slate-400 flex items-center gap-1">
+                    → {{ tx.receiver.slice(0, 12) }}...
+                    <span class="text-emerald-400 font-semibold ml-auto">{{ tx.amount }} BTC</span>
+                  </div>
                 </div>
-              </div>
-            }
+              }
+            </div>
+          }
+          <div class="mt-2 text-xs text-slate-400">
+            Até 4 transações serão incluídas neste bloco
           </div>
         </div>
-        @if (pendingTransactions.length === 0) {
-          <div class="bg-slate-700 border border-slate-600 rounded-lg p-4 text-slate-400 text-sm text-center">
-            Nenhuma transação no mempool
-          </div>
-        } @else {
-          <div class="bg-slate-700 border border-slate-600 rounded-lg p-3 space-y-2">
-            @for (tx of pendingTransactions.slice(0, 4); track tx.id) {
-              <div class="bg-slate-800 rounded p-2 text-xs">
-                <div class="text-blue-300 font-mono truncate">{{ tx.sender.slice(0, 12) }}...</div>
-                <div class="text-slate-400 flex items-center gap-1">
-                  → {{ tx.receiver.slice(0, 12) }}...
-                  <span class="text-emerald-400 font-semibold ml-auto">{{ tx.amount }} BTC</span>
-                </div>
-              </div>
-            }
-          </div>
-        }
+      </div>
+
+      <div>
+        <label for="prevHash" class="block text-slate-300 mb-2 text-sm">Previous Hash</label>
+        <input
+          id="prevHash"
+          type="text"
+          [value]="previousHash"
+          disabled
+          class="w-full bg-slate-700 border border-slate-600 text-slate-400 font-mono text-sm rounded-md px-3 py-2"
+        />
+      </div>
+
+      <div>
+        <label for="currentHash" class="block text-slate-300 mb-2 text-sm">Current Hash</label>
+        <input
+          id="currentHash"
+          type="text"
+          [value]="currentHash()"
+          disabled
+          [class.bg-emerald-950]="isValid()"
+          [class.border-emerald-500]="isValid()"
+          [class.text-emerald-300]="isValid()"
+          [class.bg-red-950]="!isValid()"
+          [class.border-red-500]="!isValid()"
+          [class.text-red-300]="!isValid()"
+          class="w-full border-2 font-mono text-sm rounded-md px-3 py-2"
+        />
         <div class="mt-2 text-xs text-slate-400">
-          Até 4 transações serão incluídas neste bloco
+          Difficulty: Hash must start with {{ difficulty }} zero{{ difficulty !== 1 ? 's' : '' }}
         </div>
       </div>
-    </div>
 
-    <div>
-      <label class="block text-slate-300 mb-2 text-sm">Previous Hash</label>
-      <input
-        type="text"
-        [value]="previousHash"
-        disabled
-        class="w-full bg-slate-700 border border-slate-600 text-slate-400 font-mono text-sm rounded-md px-3 py-2">
+      <button
+        (click)="mine()"
+        [disabled]="isMining() || isRacing()"
+        class="md:col-span-2 w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-slate-600 disabled:to-slate-600 text-white py-6 text-lg font-semibold rounded-md transition-all flex items-center justify-center gap-2"
+      >
+        @if (!isMining() && !isRacing()) {
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+        } @else {
+          <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <polyline points="23 4 23 10 17 10" />
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+          </svg>
+        }
+        @if (miningMode() === 'single') {
+          {{ isMining() ? 'Mining...' : 'MINE BLOCK' }}
+        } @else {
+          {{ isRacing() ? 'Racing...' : 'START MINING RACE' }}
+        }
+      </button>
     </div>
-
-    <div>
-      <label class="block text-slate-300 mb-2 text-sm">Current Hash</label>
-      <input
-        type="text"
-        [value]="currentHash()"
-        disabled
-        [class.bg-emerald-950]="isValid()"
-        [class.border-emerald-500]="isValid()"
-        [class.text-emerald-300]="isValid()"
-        [class.bg-red-950]="!isValid()"
-        [class.border-red-500]="!isValid()"
-        [class.text-red-300]="!isValid()"
-        class="w-full border-2 font-mono text-sm rounded-md px-3 py-2">
-      <div class="mt-2 text-xs text-slate-400">
-        Difficulty: Hash must start with {{ difficulty }} zero{{ difficulty !== 1 ? 's' : '' }}
-      </div>
-    </div>
-
-    <button
-      (click)="mine()"
-      [disabled]="isMining() || isRacing()"
-      class="md:col-span-2 w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-slate-600 disabled:to-slate-600 text-white py-6 text-lg font-semibold rounded-md transition-all flex items-center justify-center gap-2">
-      @if (!isMining() && !isRacing()) {
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-        </svg>
-      } @else {
-        <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <polyline points="23 4 23 10 17 10"/>
-          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-        </svg>
-      }
-      @if (miningMode() === 'single') {
-        {{ isMining() ? 'Mining...' : 'MINE BLOCK' }}
-      } @else {
-        {{ isRacing() ? 'Racing...' : 'START MINING RACE' }}
-      }
-    </button>
   </div>
-</div>
 </div>

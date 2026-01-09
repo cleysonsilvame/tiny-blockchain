@@ -1,5 +1,13 @@
-import { Component, Input, OnInit, OnDestroy, signal, computed, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  OnDestroy,
+  signal,
+  computed,
+  ViewChild,
+  inject,
+  HostListener,
+} from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { TransactionCard } from '../transaction-card/transaction-card';
 import { Transaction } from '../../models/blockchain.model';
@@ -8,11 +16,13 @@ import { Popover, PopoverTrigger, PopoverContent } from '../ui/popover';
 
 @Component({
   selector: 'app-mempool-sidebar',
-  imports: [CommonModule, FormsModule, TransactionCard, Popover, PopoverTrigger, PopoverContent],
+  imports: [FormsModule, TransactionCard, Popover, PopoverTrigger, PopoverContent],
   templateUrl: './mempool-sidebar.html',
-  styleUrl: './mempool-sidebar.css'
+  styleUrl: './mempool-sidebar.css',
 })
-export class MempoolSidebar implements OnInit, OnDestroy {
+export class MempoolSidebar implements OnDestroy {
+  blockchainService = inject(Blockchain);
+
   @ViewChild('newTxPopover') newTxPopover?: Popover;
   @ViewChild('autoPopover') autoPopover?: Popover;
 
@@ -22,21 +32,17 @@ export class MempoolSidebar implements OnInit, OnDestroy {
   fee = signal<string>('0.0001');
   autoGenerate = signal<boolean>(false);
   autoGenerateInterval = signal<number>(5000);
-  private autoGenerateTimer?: any;
+  private autoGenerateTimer?: number;
   private txCounter = 1;
 
   transactions = computed(() => this.blockchainService.mempool());
   isPrioritized = computed(() => this.blockchainService.prioritizeMempoolByFee());
   sortedTransactions = computed(() => {
     const txs = this.transactions();
-    return this.isPrioritized()
-      ? [...txs].sort((a, b) => b.fee - a.fee)
-      : txs;
+    return this.isPrioritized() ? [...txs].sort((a, b) => b.fee - a.fee) : txs;
   });
 
-  constructor(public blockchainService: Blockchain) {}
-
-  ngOnInit(): void {}
+  // No constructor or ngOnInit needed; using signals
 
   ngOnDestroy(): void {
     if (this.autoGenerateTimer) {
@@ -78,7 +84,7 @@ export class MempoolSidebar implements OnInit, OnDestroy {
       sender: this.sender().trim(),
       receiver: this.receiver().trim(),
       amount: parseFloat(this.amount()),
-      fee: parseFloat(this.fee() || '0')
+      fee: parseFloat(this.fee() || '0'),
     };
 
     this.blockchainService.addTransaction(newTx);
@@ -108,7 +114,7 @@ export class MempoolSidebar implements OnInit, OnDestroy {
         sender: this.generateRandomAddress(),
         receiver: this.generateRandomAddress(),
         amount: parseFloat((Math.random() * 5).toFixed(3)),
-        fee: parseFloat((Math.random() * 0.001).toFixed(6))
+        fee: parseFloat((Math.random() * 0.001).toFixed(6)),
       };
       this.blockchainService.addTransaction(newTx);
     }, this.autoGenerateInterval());
@@ -127,5 +133,9 @@ export class MempoolSidebar implements OnInit, OnDestroy {
       this.startAutoGeneration();
     }
   }
-}
 
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.closeAllPopovers();
+  }
+}
