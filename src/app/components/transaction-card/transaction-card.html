@@ -1,0 +1,25 @@
+<div class="bg-slate-800 rounded-lg p-3 border border-slate-700 hover:border-slate-600 transition-colors">
+  @if (prioritized) {
+    <div class="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded">
+      🚀 Prioridade
+    </div>
+  }
+
+  <ng-content></ng-content>
+  <div class="flex items-center justify-between mb-2">
+    <span class="text-xs text-slate-400">From</span>
+    <div class="text-right">
+      <span class="text-xs text-emerald-400 font-semibold">{{ amount }} BTC</span>
+      @if (fee > 0) {
+        <div class="text-xs text-yellow-500 font-mono">Fee: {{ fee.toFixed(6) }}</div>
+      }
+    </div>
+  </div>
+  <div class="text-xs font-mono text-blue-300 truncate mb-2">
+    {{ sender }}
+  </div>
+  <div class="text-xs text-slate-500 mb-1">To</div>
+  <div class="text-xs font-mono text-purple-300 truncate">
+    {{ receiver }}
+  </div>
+</div>
