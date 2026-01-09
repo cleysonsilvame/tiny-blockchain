@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "blockchain-visualizer": {
+    "tiny-blockchain": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -55,10 +55,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "blockchain-visualizer:build:production"
+              "buildTarget": "tiny-blockchain:build:production"
             },
             "development": {
-              "buildTarget": "blockchain-visualizer:build:development"
+              "buildTarget": "tiny-blockchain:build:development"
             }
           },
           "defaultConfiguration": "development"
