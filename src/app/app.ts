@@ -35,7 +35,7 @@ export class App {
   mempoolWidth = signal(384); // w-96 = 24rem = 384px
 
   // Resize state for mining-block height
-  miningBlockHeight = signal(40); // initial percentage (40% of container)
+  miningBlockHeight = signal(80); // initial percentage (40% of container)
 
   isResizing = signal(false);
   resizeStartX = signal(0);
