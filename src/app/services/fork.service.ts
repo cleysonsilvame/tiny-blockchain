@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { BlockchainFork } from '../models/fork.model';
 import { Block } from '../models/blockchain.model';
 import { Blockchain } from './blockchain';
@@ -7,12 +7,14 @@ import { Blockchain } from './blockchain';
   providedIn: 'root',
 })
 export class ForkService {
+  private blockchain = inject(Blockchain);
+
   forks = signal<BlockchainFork[]>([]);
   activeForkId = signal<string | null>(null);
   showForkView = signal<boolean>(false);
-  miningForkId = signal<string | null>(null); // Track which fork is being mined
+  miningForkId = signal<string | null>(null);
 
-  constructor(private blockchain: Blockchain) {
+  constructor() {
     // Initialize with main chain as default fork
     this.initializeMainChain();
     // Sync main chain with blockchain whenever it changes
@@ -26,7 +28,7 @@ export class ForkService {
       chain: this.blockchain.blockchain(), // Initialize with current blockchain
       color: '#10b981', // green
       isMainChain: true,
-      forkPoint: 0
+      forkPoint: 0,
     };
     this.forks.set([mainChain]);
     this.activeForkId.set('main');
@@ -36,8 +38,8 @@ export class ForkService {
   private syncMainChain(): void {
     // Update main chain whenever blockchain changes
     setInterval(() => {
-      this.forks.update(forks => {
-        return forks.map(fork => {
+      this.forks.update((forks) => {
+        return forks.map((fork) => {
           if (fork.id === 'main') {
             return { ...fork, chain: this.blockchain.blockchain() };
           }
@@ -65,10 +67,10 @@ export class ForkService {
       chain: forkChain,
       color: this.generateRandomColor(),
       isMainChain: false,
-      forkPoint
+      forkPoint,
     };
 
-    this.forks.update(forks => [...forks, newFork]);
+    this.forks.update((forks) => [...forks, newFork]);
     this.showForkView.set(true);
 
     return forkId;
@@ -76,8 +78,8 @@ export class ForkService {
 
   // Adiciona bloco a um fork específico
   addBlockToFork(forkId: string, block: Block): void {
-    this.forks.update(forks => {
-      return forks.map(fork => {
+    this.forks.update((forks) => {
+      return forks.map((fork) => {
         if (fork.id === forkId) {
           return { ...fork, chain: [...fork.chain, block] };
         }
@@ -96,17 +98,17 @@ export class ForkService {
 
     let longestFork = allForks[0];
 
-    allForks.forEach(fork => {
+    allForks.forEach((fork) => {
       if (fork.chain.length > longestFork.chain.length) {
         longestFork = fork;
       }
     });
 
     // Update main chain flag
-    this.forks.update(forks => {
-      return forks.map(fork => ({
+    this.forks.update((forks) => {
+      return forks.map((fork) => ({
         ...fork,
-        isMainChain: fork.id === longestFork.id
+        isMainChain: fork.id === longestFork.id,
       }));
     });
 
@@ -122,11 +124,11 @@ export class ForkService {
   }
 
   getFork(forkId: string): BlockchainFork | undefined {
-    return this.forks().find(f => f.id === forkId);
+    return this.forks().find((f) => f.id === forkId);
   }
 
   getMainChain(): BlockchainFork | undefined {
-    return this.forks().find(f => f.isMainChain);
+    return this.forks().find((f) => f.isMainChain);
   }
 
   removeFork(forkId: string): void {
@@ -134,11 +136,11 @@ export class ForkService {
       throw new Error('Cannot remove main chain');
     }
 
-    this.forks.update(forks => forks.filter(f => f.id !== forkId));
+    this.forks.update((forks) => forks.filter((f) => f.id !== forkId));
   }
 
   toggleForkView(): void {
-    this.showForkView.update(show => !show);
+    this.showForkView.update((show) => !show);
   }
 
   private generateRandomColor(): string {

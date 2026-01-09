@@ -1,21 +1,23 @@
-import { Component, signal, computed, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, computed, inject } from '@angular/core';
+
 import { MiningService } from '../../services/mining.service';
-import { Miner, MiningProgress } from '../../models/miner.model';
+import { MiningProgress } from '../../models/miner.model';
 
 @Component({
   selector: 'app-mining-race',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './mining-race.html',
   styleUrl: './mining-race.css',
 })
 export class MiningRace {
+  miningService = inject(MiningService);
+
   miners = computed(() => this.miningService.miners());
   miningProgress = computed(() => this.miningService.miningProgress());
   isRacing = computed(() => this.miningService.isRacing());
   lastWinner = computed(() => this.miningService.lastWinner());
 
-  constructor(public miningService: MiningService) {}
+  // No constructor needed; using inject() for DI
 
   toggleMiner(minerId: string): void {
     this.miningService.toggleMiner(minerId);

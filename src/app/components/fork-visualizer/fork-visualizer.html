@@ -2,7 +2,12 @@
   <div class="flex items-center justify-between mb-4">
     <div class="flex items-center gap-2">
       <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+        />
       </svg>
       <h4 class="text-sm font-semibold text-white">Visualização de Forks</h4>
     </div>
@@ -13,7 +18,8 @@
       [class.bg-purple-600]="showForkView()"
       [class.text-white]="showForkView()"
       [class.bg-slate-700]="!showForkView()"
-      [class.text-slate-400]="!showForkView()">
+      [class.text-slate-400]="!showForkView()"
+    >
       {{ showForkView() ? 'Ocultar' : 'Mostrar' }}
     </button>
   </div>
@@ -22,9 +28,11 @@
     <div class="space-y-3">
       <!-- Fork List -->
       @for (fork of forks(); track fork.id) {
-        <div class="bg-slate-800 rounded p-3 border transition-all"
-             [style.borderColor]="fork.color"
-             [class.border-2]="fork.isMainChain">
+        <div
+          class="bg-slate-800 rounded p-3 border transition-all"
+          [style.borderColor]="fork.color"
+          [class.border-2]="fork.isMainChain"
+        >
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
               <div class="w-3 h-3 rounded-full" [style.backgroundColor]="fork.color"></div>
@@ -41,16 +49,21 @@
             @if (!fork.isMainChain && fork.id !== 'main') {
               <button
                 (click)="forkService.removeFork(fork.id)"
-                class="text-red-400 hover:text-red-300 text-xs">
+                class="text-red-400 hover:text-red-300 text-xs"
+              >
                 Remover
               </button>
             }
           </div>
 
           <div class="text-xs text-slate-400 space-y-1">
-            <div>Blocos: <span class="text-white font-semibold">{{ fork.chain.length }}</span></div>
+            <div>
+              Blocos: <span class="text-white font-semibold">{{ fork.chain.length }}</span>
+            </div>
             @if (fork.forkPoint > 0) {
-              <div>Fork no bloco: <span class="text-white">#{{ fork.forkPoint }}</span></div>
+              <div>
+                Fork no bloco: <span class="text-white">#{{ fork.forkPoint }}</span>
+              </div>
             }
           </div>
         </div>
@@ -60,14 +73,18 @@
       <button
         (click)="createFork()"
         [disabled]="blockchainData().length === 0"
-        class="w-full py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 text-white text-sm rounded transition-all disabled:cursor-not-allowed">
+        class="w-full py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 text-white text-sm rounded transition-all disabled:cursor-not-allowed"
+      >
         <span>+ Criar Fork Manual</span>
       </button>
 
       <!-- Info -->
       <div class="text-xs text-slate-400 bg-slate-800 rounded p-2">
         <p class="mb-1">💡 <strong class="text-white">Consenso:</strong></p>
-        <p>A cadeia mais longa sempre vence. Quando um fork supera a cadeia principal, ele se torna a nova cadeia válida.</p>
+        <p>
+          A cadeia mais longa sempre vence. Quando um fork supera a cadeia principal, ele se torna a
+          nova cadeia válida.
+        </p>
       </div>
     </div>
   }

@@ -17,4 +17,3 @@ export interface Block {
   reward: number; // Recompensa total (base + taxas)
   timestamp: number; // Timestamp do bloco
 }
-

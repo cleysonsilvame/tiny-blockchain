@@ -1,23 +1,23 @@
-import { Component, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, computed, inject } from '@angular/core';
+
 import { ForkService } from '../../services/fork.service';
 import { Blockchain } from '../../services/blockchain';
 
 @Component({
   selector: 'app-fork-visualizer',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './fork-visualizer.html',
   styleUrl: './fork-visualizer.css',
 })
 export class ForkVisualizer {
+  forkService = inject(ForkService);
+  private blockchain = inject(Blockchain);
+
   forks = computed(() => this.forkService.forks());
   showForkView = computed(() => this.forkService.showForkView());
   blockchainData = computed(() => this.blockchain.blockchain());
 
-  constructor(
-    public forkService: ForkService,
-    private blockchain: Blockchain
-  ) {}
+  // No constructor needed; using inject() for DI
 
   createFork(): void {
     const chain = this.blockchainData();
@@ -31,8 +31,9 @@ export class ForkVisualizer {
 
     try {
       this.forkService.createFork(forkPoint, forkName);
-    } catch (error: any) {
-      alert(error.message);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao criar o fork';
+      alert(msg);
     }
   }
 

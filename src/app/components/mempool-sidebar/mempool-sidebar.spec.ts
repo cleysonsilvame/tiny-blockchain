@@ -8,9 +8,8 @@ describe('MempoolSidebar', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MempoolSidebar]
-    })
-    .compileComponents();
+      imports: [MempoolSidebar],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(MempoolSidebar);
     component = fixture.componentInstance;

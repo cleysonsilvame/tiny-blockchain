@@ -2,10 +2,12 @@
   <div class="flex items-center justify-between">
     <h3 class="text-lg font-semibold text-white">Mining Competition</h3>
     @if (lastWinner()) {
-    <div class="text-sm text-slate-400">
-      Last Winner: <span [style.color]="lastWinner()!.winner.color" class="font-semibold">{{ lastWinner()!.winner.name
+      <div class="text-sm text-slate-400">
+        Last Winner:
+        <span [style.color]="lastWinner()!.winner.color" class="font-semibold">{{
+          lastWinner()!.winner.name
         }}</span>
-    </div>
+      </div>
     }
   </div>
 
@@ -13,89 +15,102 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     <!-- Miners List -->
     @for (miner of miners(); track miner.id) {
-    <div class="bg-slate-800 rounded-lg p-4 border border-slate-700 transition-all" [class.opacity-50]="!miner.isActive"
-      [class.ring-2]="isRacing() && miner.isActive" [style.--miner-color]="miner.color">
-
-      <!-- Miner Info -->
-      <div class="flex justify-center min-w-0">
-        <div class="text-xs text-slate-500 font-mono truncate">
-          {{ miner.address.substring(0, 12) }}...{{ miner.address.substring(miner.address.length - 6) }}
+      <div
+        class="bg-slate-800 rounded-lg p-4 border border-slate-700 transition-all"
+        [class.opacity-50]="!miner.isActive"
+        [class.ring-2]="isRacing() && miner.isActive"
+        [style.--miner-color]="miner.color"
+      >
+        <!-- Miner Info -->
+        <div class="flex justify-center min-w-0">
+          <div class="text-xs text-slate-500 font-mono truncate">
+            {{ miner.address.substring(0, 12) }}...{{
+              miner.address.substring(miner.address.length - 6)
+            }}
+          </div>
         </div>
+
+        <!-- Miner Header -->
+        <div class="flex flex-col items-center justify-between mb-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <!-- Color Indicator -->
+            <div class="w-2 h-2 rounded-full" [style.backgroundColor]="miner.color"></div>
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-white truncate">{{ miner.name }}</span>
+              <span class="text-xs text-slate-400"> ({{ formatNumber(miner.hashRate) }} H/s) </span>
+            </div>
+          </div>
+
+          <!-- Stats & Toggle -->
+          <div class="flex items-center gap-3">
+            <div class="text-sm text-slate-400 whitespace-nowrap">
+              Blocks: <span class="font-semibold text-white">{{ miner.totalBlocksMined }}</span>
+            </div>
+            <button
+              (click)="toggleMiner(miner.id)"
+              [disabled]="isRacing()"
+              class="px-3 py-1 rounded text-xs font-medium transition-colors"
+              [class]="
+                miner.isActive
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+              "
+              [class.cursor-not-allowed]="isRacing()"
+            >
+              {{ miner.isActive ? 'Active' : 'Inactive' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Mining Progress (only show when racing and active) -->
+        @if (isRacing() && miner.isActive) {
+          @if (getMinerProgress(miner.id); as progress) {
+            <div class="space-y-2">
+              <!-- Progress Bar -->
+              <div class="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                <div
+                  class="h-full transition-all duration-300 rounded-full"
+                  [style.width.%]="getProgressPercentage(progress.attempts)"
+                  [style.backgroundColor]="miner.color"
+                ></div>
+              </div>
+
+              <!-- Mining Details -->
+              <div class="flex flex-col gap-2 text-xs">
+                <div>
+                  <span class="text-slate-400">Nonce:</span>
+                  <span class="text-white font-mono ml-1">{{ formatNumber(progress.nonce) }}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400">Attempts:</span>
+                  <span class="text-white font-mono ml-1">{{
+                    formatNumber(progress.attempts)
+                  }}</span>
+                </div>
+                <div class="col-span-2">
+                  <span class="text-slate-400">Hash:</span>
+                  <span class="text-slate-300 font-mono ml-1 text-[10px]">{{
+                    formatHash(progress.currentHash)
+                  }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        }
       </div>
-
-      <!-- Miner Header -->
-      <div class="flex flex-col items-center justify-between mb-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <!-- Color Indicator -->
-          <div class="w-2 h-2 rounded-full" [style.backgroundColor]="miner.color"></div>
-          <div class="flex items-center gap-2">
-            <span class="font-semibold text-white truncate">{{ miner.name }}</span>
-            <span class="text-xs text-slate-400">
-              ({{ formatNumber(miner.hashRate) }} H/s)
-            </span>
-          </div>
-
-        </div>
-
-        <!-- Stats & Toggle -->
-        <div class="flex items-center gap-3">
-          <div class="text-sm text-slate-400 whitespace-nowrap">
-            Blocks: <span class="font-semibold text-white">{{ miner.totalBlocksMined }}</span>
-          </div>
-          <button (click)="toggleMiner(miner.id)" [disabled]="isRacing()"
-            class="px-3 py-1 rounded text-xs font-medium transition-colors"
-            [class]="miner.isActive ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'"
-            [class.cursor-not-allowed]="isRacing()">
-            {{ miner.isActive ? 'Active' : 'Inactive' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Mining Progress (only show when racing and active) -->
-      @if (isRacing() && miner.isActive) {
-      @if (getMinerProgress(miner.id); as progress) {
-      <div class="space-y-2">
-        <!-- Progress Bar -->
-        <div class="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
-          <div class="h-full transition-all duration-300 rounded-full"
-            [style.width.%]="getProgressPercentage(progress.attempts)" [style.backgroundColor]="miner.color">
-          </div>
-        </div>
-
-        <!-- Mining Details -->
-        <div class="flex flex-col gap-2 text-xs">
-          <div>
-            <span class="text-slate-400">Nonce:</span>
-            <span class="text-white font-mono ml-1">{{ formatNumber(progress.nonce) }}</span>
-          </div>
-          <div>
-            <span class="text-slate-400">Attempts:</span>
-            <span class="text-white font-mono ml-1">{{ formatNumber(progress.attempts) }}</span>
-          </div>
-          <div class="col-span-2">
-            <span class="text-slate-400">Hash:</span>
-            <span class="text-slate-300 font-mono ml-1 text-[10px]">{{ formatHash(progress.currentHash) }}</span>
-          </div>
-        </div>
-      </div>
-      }
-      }
-    </div>
     }
-
-
 
     <!-- Instructions  TODO: colocar em um tooltip-->
     @if (!isRacing()) {
-    <div class="text-sm text-slate-400 bg-slate-800 rounded p-3 border border-slate-700 h-max">
-      <p class="mb-1">💡 <strong class="text-white">How it works:</strong></p>
-      <ul class="list-disc list-inside space-y-1 text-xs">
-        <li>Multiple miners compete to find the proof-of-work</li>
-        <li>Each miner has different hash rates (mining speed)</li>
-        <li>First to find valid hash wins the block reward</li>
-        <li>Toggle miners on/off before starting</li>
-      </ul>
-    </div>
+      <div class="text-sm text-slate-400 bg-slate-800 rounded p-3 border border-slate-700 h-max">
+        <p class="mb-1">💡 <strong class="text-white">How it works:</strong></p>
+        <ul class="list-disc list-inside space-y-1 text-xs">
+          <li>Multiple miners compete to find the proof-of-work</li>
+          <li>Each miner has different hash rates (mining speed)</li>
+          <li>First to find valid hash wins the block reward</li>
+          <li>Toggle miners on/off before starting</li>
+        </ul>
+      </div>
     }
   </div>
 </div>

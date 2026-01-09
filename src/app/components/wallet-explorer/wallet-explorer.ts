@@ -1,15 +1,17 @@
-import { Component, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, computed, inject } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { Blockchain } from '../../services/blockchain';
 
 @Component({
   selector: 'app-wallet-explorer',
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './wallet-explorer.html',
   styleUrl: './wallet-explorer.css',
 })
 export class WalletExplorer {
+  blockchainService = inject(Blockchain);
+
   searchAddress = signal<string>('');
   selectedAddress = signal<string | null>(null);
 
@@ -25,7 +27,7 @@ export class WalletExplorer {
     return addr ? this.blockchainService.getAddressHistory(addr) : [];
   });
 
-  constructor(public blockchainService: Blockchain) {}
+  // No constructor needed; using inject() for DI
 
   searchWallet(): void {
     const addr = this.searchAddress().trim();

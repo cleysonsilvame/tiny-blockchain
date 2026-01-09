@@ -10,71 +10,77 @@
         [class.bg-slate-800]="activeForkId() !== fork.id"
         [class.opacity-70]="activeForkId() !== fork.id"
       >
-      <!-- Fork color indicator dot -->
-      <div
-        class="w-3 h-3 rounded-full"
-        [style.backgroundColor]="fork.color"
-      ></div>
+        <!-- Fork color indicator dot -->
+        <div class="w-3 h-3 rounded-full" [style.backgroundColor]="fork.color"></div>
 
-      <!-- Fork name -->
-      <span class="text-sm font-medium">{{ fork.name }}</span>
+        <!-- Fork name -->
+        <span class="text-sm font-medium">{{ fork.name }}</span>
 
-      <!-- Block count badge -->
-      <span class="text-xs px-2 py-0.5 rounded bg-slate-600 text-slate-200">
-        {{ fork.chain.length }}
-      </span>
-
-      <!-- Main chain badge -->
-      @if (fork.isMainChain) {
-        <span class="text-xs px-2 py-0.5 rounded bg-emerald-900 text-emerald-200">
-          Main
+        <!-- Block count badge -->
+        <span class="text-xs px-2 py-0.5 rounded bg-slate-600 text-slate-200">
+          {{ fork.chain.length }}
         </span>
-      }
 
-      <!-- Delete button for non-main forks -->
-      @if (fork.id !== 'main') {
-        <button
-          (click)="deleteFork(fork.id, $event)"
-          class="ml-1 text-slate-400 hover:text-red-400 hover:bg-red-900/20 rounded transition-colors"
-          title="Delete fork"
-        >
-          ×
-        </button>
-      }
-    </button>
-  }
+        <!-- Main chain badge -->
+        @if (fork.isMainChain) {
+          <span class="text-xs px-2 py-0.5 rounded bg-emerald-900 text-emerald-200"> Main </span>
+        }
 
-  <!-- Create Fork Button -->
-  <button
-    (click)="createFork()"
-    [disabled]="blockchainData().length === 0"
-    class="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 disabled:cursor-not-allowed text-white transition-all flex-shrink-0"
-    title="Criar Fork Manual"
-  >
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-    </svg>
-  </button>
+        <!-- Delete button for non-main forks -->
+        @if (fork.id !== 'main') {
+          <button
+            (click)="deleteFork(fork.id, $event)"
+            class="ml-1 text-slate-400 hover:text-red-400 hover:bg-red-900/20 rounded transition-colors"
+            title="Delete fork"
+          >
+            ×
+          </button>
+        }
+      </button>
+    }
 
-  <!-- Info Button with Tooltip -->
-  <div class="relative flex-shrink-0">
+    <!-- Create Fork Button -->
     <button
-      (mouseenter)="showTooltip.set(true)"
-      (mouseleave)="showTooltip.set(false)"
-      class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition-all"
+      (click)="createFork()"
+      [disabled]="blockchainData().length === 0"
+      class="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 disabled:cursor-not-allowed text-white transition-all flex-shrink-0"
+      title="Criar Fork Manual"
     >
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
       </svg>
     </button>
 
-    <!-- Tooltip -->
-    @if (showTooltip()) {
-      <div class="fixed bottom-auto right-auto mb-2 z-[100] w-64 px-3 py-2 text-xs text-white bg-slate-800 rounded-lg shadow-xl border border-slate-600"
-           style="transform: translate(-100%, -100%); margin-top: -8px;">
-        <p class="mb-1"><strong>💡 Consenso:</strong></p>
-        <p>A cadeia mais longa sempre vence. Quando um fork supera a cadeia principal, ele se torna a nova cadeia válida.</p>
-      </div>
-    }
+    <!-- Info Button with Tooltip -->
+    <div class="relative flex-shrink-0">
+      <button
+        (mouseenter)="showTooltip.set(true)"
+        (mouseleave)="showTooltip.set(false)"
+        class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition-all"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </button>
+
+      <!-- Tooltip -->
+      @if (showTooltip()) {
+        <div
+          class="fixed bottom-auto right-auto mb-2 z-[100] w-64 px-3 py-2 text-xs text-white bg-slate-800 rounded-lg shadow-xl border border-slate-600"
+          style="transform: translate(-100%, -100%); margin-top: -8px"
+        >
+          <p class="mb-1"><strong>💡 Consenso:</strong></p>
+          <p>
+            A cadeia mais longa sempre vence. Quando um fork supera a cadeia principal, ele se torna
+            a nova cadeia válida.
+          </p>
+        </div>
+      }
+    </div>
   </div>
 </div>

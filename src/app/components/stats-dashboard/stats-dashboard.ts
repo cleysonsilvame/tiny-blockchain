@@ -1,5 +1,5 @@
-import { Component, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, computed, inject } from '@angular/core';
+
 import { Blockchain } from '../../services/blockchain';
 import { MiningService } from '../../services/mining.service';
 
@@ -14,11 +14,14 @@ interface MinerStats {
 
 @Component({
   selector: 'app-stats-dashboard',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './stats-dashboard.html',
   styleUrl: './stats-dashboard.css',
 })
 export class StatsDashboard {
+  private blockchain = inject(Blockchain);
+  private miningService = inject(MiningService);
+
   blocks = computed(() => this.blockchain.blockchain());
   miners = computed(() => this.miningService.miners());
 
@@ -35,7 +38,7 @@ export class StatsDashboard {
     const blocks = this.blocks();
     if (blocks.length < 2) return 0;
 
-    const timestamps = blocks.map(b => b.timestamp);
+    const timestamps = blocks.map((b) => b.timestamp);
     const differences = [];
 
     for (let i = 1; i < timestamps.length; i++) {
@@ -54,7 +57,7 @@ export class StatsDashboard {
     const stats: MinerStats[] = [];
 
     // Add solo miner stats (default miner address)
-    const soloBlocks = blocks.filter(b => b.minerAddress === defaultMinerAddress);
+    const soloBlocks = blocks.filter((b) => b.minerAddress === defaultMinerAddress);
     if (soloBlocks.length > 0) {
       const totalRewards = soloBlocks.reduce((sum, b) => sum + b.reward, 0);
       stats.push({
@@ -63,13 +66,13 @@ export class StatsDashboard {
         color: '#6366f1', // indigo
         blocksMined: soloBlocks.length,
         totalRewards,
-        percentage: blocks.length > 0 ? (soloBlocks.length / blocks.length) * 100 : 0
+        percentage: blocks.length > 0 ? (soloBlocks.length / blocks.length) * 100 : 0,
       });
     }
 
     // Add competition miners stats
-    miners.forEach(miner => {
-      const minerBlocks = blocks.filter(b => b.minerAddress === miner.address);
+    miners.forEach((miner) => {
+      const minerBlocks = blocks.filter((b) => b.minerAddress === miner.address);
       const totalRewards = minerBlocks.reduce((sum, b) => sum + b.reward, 0);
 
       if (minerBlocks.length > 0) {
@@ -79,7 +82,7 @@ export class StatsDashboard {
           color: miner.color,
           blocksMined: minerBlocks.length,
           totalRewards,
-          percentage: blocks.length > 0 ? (minerBlocks.length / blocks.length) * 100 : 0
+          percentage: blocks.length > 0 ? (minerBlocks.length / blocks.length) * 100 : 0,
         });
       }
     });
@@ -90,7 +93,7 @@ export class StatsDashboard {
 
   // Hashrate aproximado da rede (baseado no último bloco)
   networkHashrate = computed(() => {
-    const miners = this.miners().filter(m => m.isActive);
+    const miners = this.miners().filter((m) => m.isActive);
     return miners.reduce((sum, m) => sum + m.hashRate, 0);
   });
 
@@ -102,18 +105,15 @@ export class StatsDashboard {
   // Total de taxas coletadas
   totalFees = computed(() => {
     let total = 0;
-    this.blocks().forEach(block => {
-      block.transactions.forEach(tx => {
+    this.blocks().forEach((block) => {
+      block.transactions.forEach((tx) => {
         total += tx.fee;
       });
     });
     return total;
   });
 
-  constructor(
-    private blockchain: Blockchain,
-    private miningService: MiningService
-  ) {}
+  // No constructor needed; using inject() for DI
 
   formatNumber(num: number): string {
     return num.toLocaleString();

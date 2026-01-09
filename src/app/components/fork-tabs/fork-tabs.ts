@@ -1,25 +1,25 @@
-import { Component, signal, effect, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, effect, computed, inject } from '@angular/core';
+
 import { ForkService } from '../../services/fork.service';
 import { Blockchain } from '../../services/blockchain';
 
 @Component({
   selector: 'app-fork-tabs',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './fork-tabs.html',
-  styleUrl: './fork-tabs.css'
+  styleUrl: './fork-tabs.css',
 })
 export class ForkTabs {
+  forkService = inject(ForkService);
+  private blockchain = inject(Blockchain);
+
   forks = () => this.forkService.forks();
   activeForkId = () => this.forkService.activeForkId();
   blockchainData = computed(() => this.blockchain.blockchain());
   showTooltip = signal<boolean>(false);
 
-  constructor(
-    public forkService: ForkService,
-    private blockchain: Blockchain
-  ) {
+  constructor() {
     // Auto-switch to mining fork when mining completes
     effect(() => {
       const miningForkId = this.forkService.miningForkId();
@@ -62,8 +62,9 @@ export class ForkTabs {
       const newForkId = this.forkService.createFork(forkPoint, forkName);
       // Auto-switch to new fork
       this.forkService.activeForkId.set(newForkId);
-    } catch (error: any) {
-      alert(error.message);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erro ao criar o fork';
+      alert(msg);
     }
   }
 }

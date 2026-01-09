@@ -8,9 +8,8 @@ describe('BlockchainDisplay', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BlockchainDisplay]
-    })
-    .compileComponents();
+      imports: [BlockchainDisplay],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(BlockchainDisplay);
     component = fixture.componentInstance;

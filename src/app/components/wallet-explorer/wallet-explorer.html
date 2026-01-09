@@ -1,4 +1,4 @@
-<div class="w-full h-full bg-slate-900 flex flex-col overflow-hidden ">
+<div class="w-full h-full bg-slate-900 flex flex-col overflow-hidden">
   <!-- Header -->
   <div class="p-6 border-b border-slate-700">
     <div class="flex items-center gap-3 mb-4">
@@ -11,93 +11,128 @@
 
     <!-- Search -->
     <div class="space-y-2">
-      <input type="text" [value]="searchAddress()" (input)="searchAddress.set($any($event.target).value)"
-        (keyup.enter)="searchWallet()" placeholder="Digite um endereço..."
-        class="w-full bg-slate-800 border border-slate-600 text-white text-xs font-mono rounded-md px-3 py-2">
-      <button (click)="searchWallet()" [disabled]="!searchAddress()"
-        class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-700 text-white py-2 rounded-md text-sm">
+      <input
+        type="text"
+        [value]="searchAddress()"
+        (input)="searchAddress.set($any($event.target).value)"
+        (keyup.enter)="searchWallet()"
+        placeholder="Digite um endereço..."
+        class="w-full bg-slate-800 border border-slate-600 text-white text-xs font-mono rounded-md px-3 py-2"
+      />
+      <button
+        (click)="searchWallet()"
+        [disabled]="!searchAddress()"
+        class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-700 text-white py-2 rounded-md text-sm"
+      >
         Consultar Saldo
       </button>
     </div>
   </div>
 
   <!-- Balance Display -->
-  <div *ngIf="selectedAddress()" class="p-6 border-b border-slate-700 bg-slate-800/50">
-    <div class="flex items-center justify-between mb-2">
-      <span class="text-sm text-slate-400">Saldo Atual</span>
-      <button (click)="clearSearch()" class="text-slate-400 hover:text-white text-xs">
-        Limpar
-      </button>
+  @if (selectedAddress()) {
+    <div class="p-6 border-b border-slate-700 bg-slate-800/50">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm text-slate-400">Saldo Atual</span>
+        <button (click)="clearSearch()" class="text-slate-400 hover:text-white text-xs">
+          Limpar
+        </button>
+      </div>
+      <div class="text-3xl font-bold text-emerald-400 mb-3">{{ balance().toFixed(8) }} BTC</div>
+      <div class="text-xs font-mono text-slate-400 break-all">
+        {{ selectedAddress() }}
+      </div>
     </div>
-    <div class="text-3xl font-bold text-emerald-400 mb-3">
-      {{ balance().toFixed(8) }} BTC
-    </div>
-    <div class="text-xs font-mono text-slate-400 break-all">
-      {{ selectedAddress() }}
-    </div>
-  </div>
+  }
 
   <!-- History -->
   <div class="flex-1 overflow-y-auto p-6">
-    <div *ngIf="!selectedAddress()" class="space-y-3">
-      <h3 class="text-sm font-semibold text-slate-300 mb-3">Endereços Ativos</h3>
-      <div *ngIf="allAddresses().length === 0" class="text-center py-8 text-slate-500">
-        <p class="text-sm">Nenhum endereço encontrado</p>
-        <p class="text-xs mt-1">Mine blocos para gerar endereços</p>
+    @if (!selectedAddress()) {
+      <div class="space-y-3">
+        <h3 class="text-sm font-semibold text-slate-300 mb-3">Endereços Ativos</h3>
+        @if (allAddresses().length === 0) {
+          <div class="text-center py-8 text-slate-500">
+            <p class="text-sm">Nenhum endereço encontrado</p>
+            <p class="text-xs mt-1">Mine blocos para gerar endereços</p>
+          </div>
+        }
+        @for (addr of allAddresses(); track addr) {
+          <button
+            (click)="selectAddress(addr)"
+            class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg p-3 text-left transition-colors"
+          >
+            <div class="text-xs font-mono text-blue-300 truncate mb-1">
+              {{ addr }}
+            </div>
+            <div class="text-sm font-semibold text-white">
+              {{ blockchainService.getBalance(addr).toFixed(4) }} BTC
+            </div>
+          </button>
+        }
       </div>
-      <button *ngFor="let addr of allAddresses()" (click)="selectAddress(addr)"
-        class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg p-3 text-left transition-colors">
-        <div class="text-xs font-mono text-blue-300 truncate mb-1">
-          {{ addr }}
-        </div>
-        <div class="text-sm font-semibold text-white">
-          {{ blockchainService.getBalance(addr).toFixed(4) }} BTC
-        </div>
-      </button>
-    </div>
+    }
 
-    <div *ngIf="selectedAddress() && history().length > 0" class="space-y-3">
-      <h3 class="text-sm font-semibold text-slate-300 mb-3">Histórico de Transações</h3>
-      <div *ngFor="let item of history()" class="bg-slate-800 rounded-lg p-3 border border-slate-700">
-        <!-- Mining Reward -->
-        <div *ngIf="item.type === 'mining_reward'" class="space-y-1">
-          <div class="flex items-center justify-between">
-            <span class="text-xs px-2 py-1 bg-purple-500/20 text-purple-400 rounded">Mineração</span>
-            <span class="text-sm font-semibold text-emerald-400">+{{ item.amount.toFixed(8) }} BTC</span>
+    @if (selectedAddress() && history().length > 0) {
+      <div class="space-y-3">
+        <h3 class="text-sm font-semibold text-slate-300 mb-3">Histórico de Transações</h3>
+        @for (item of history(); track item) {
+          <div class="bg-slate-800 rounded-lg p-3 border border-slate-700">
+            <!-- Mining Reward -->
+            @if (item.type === 'mining_reward') {
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs px-2 py-1 bg-purple-500/20 text-purple-400 rounded"
+                    >Mineração</span
+                  >
+                  <span class="text-sm font-semibold text-emerald-400"
+                    >+{{ item.amount.toFixed(8) }} BTC</span
+                  >
+                </div>
+                <div class="text-xs text-slate-400">Block #{{ item.blockNumber }}</div>
+              </div>
+            }
+            <!-- Sent Transaction -->
+            @if (item.type === 'sent') {
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded">Enviado</span>
+                  <span class="text-sm font-semibold text-red-400"
+                    >-{{ (item.amount + (item.fee || 0)).toFixed(8) }} BTC</span
+                  >
+                </div>
+                <div class="text-xs text-slate-400">
+                  Para: <span class="font-mono">{{ item.counterparty?.slice(0, 12) }}...</span>
+                </div>
+                <div class="text-xs text-slate-500">Taxa: {{ item.fee?.toFixed(8) }} BTC</div>
+                <div class="text-xs text-slate-400">Block #{{ item.blockNumber }}</div>
+              </div>
+            }
+            <!-- Received Transaction -->
+            @if (item.type === 'received') {
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded"
+                    >Recebido</span
+                  >
+                  <span class="text-sm font-semibold text-emerald-400"
+                    >+{{ item.amount.toFixed(8) }} BTC</span
+                  >
+                </div>
+                <div class="text-xs text-slate-400">
+                  De: <span class="font-mono">{{ item.counterparty?.slice(0, 12) }}...</span>
+                </div>
+                <div class="text-xs text-slate-400">Block #{{ item.blockNumber }}</div>
+              </div>
+            }
           </div>
-          <div class="text-xs text-slate-400">Block #{{ item.blockNumber }}</div>
-        </div>
-
-        <!-- Sent Transaction -->
-        <div *ngIf="item.type === 'sent'" class="space-y-1">
-          <div class="flex items-center justify-between">
-            <span class="text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded">Enviado</span>
-            <span class="text-sm font-semibold text-red-400">-{{ (item.amount + (item.fee || 0)).toFixed(8) }}
-              BTC</span>
-          </div>
-          <div class="text-xs text-slate-400">
-            Para: <span class="font-mono">{{ item.counterparty?.slice(0, 12) }}...</span>
-          </div>
-          <div class="text-xs text-slate-500">Taxa: {{ item.fee?.toFixed(8) }} BTC</div>
-          <div class="text-xs text-slate-400">Block #{{ item.blockNumber }}</div>
-        </div>
-
-        <!-- Received Transaction -->
-        <div *ngIf="item.type === 'received'" class="space-y-1">
-          <div class="flex items-center justify-between">
-            <span class="text-xs px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded">Recebido</span>
-            <span class="text-sm font-semibold text-emerald-400">+{{ item.amount.toFixed(8) }} BTC</span>
-          </div>
-          <div class="text-xs text-slate-400">
-            De: <span class="font-mono">{{ item.counterparty?.slice(0, 12) }}...</span>
-          </div>
-          <div class="text-xs text-slate-400">Block #{{ item.blockNumber }}</div>
-        </div>
+        }
       </div>
-    </div>
+    }
 
-    <div *ngIf="selectedAddress() && history().length === 0" class="text-center py-8 text-slate-500">
-      <p class="text-sm">Nenhuma transação encontrada</p>
-    </div>
+    @if (selectedAddress() && history().length === 0) {
+      <div class="text-center py-8 text-slate-500">
+        <p class="text-sm">Nenhuma transação encontrada</p>
+      </div>
+    }
   </div>
 </div>

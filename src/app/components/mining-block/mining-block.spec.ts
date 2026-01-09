@@ -8,9 +8,8 @@ describe('MiningBlock', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MiningBlock]
-    })
-    .compileComponents();
+      imports: [MiningBlock],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(MiningBlock);
     component = fixture.componentInstance;

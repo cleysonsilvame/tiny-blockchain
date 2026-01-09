@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Miner, MiningProgress, MiningResult } from '../models/miner.model';
 import { Transaction } from '../models/blockchain.model';
 import { Blockchain } from './blockchain';
@@ -7,6 +7,8 @@ import { Blockchain } from './blockchain';
   providedIn: 'root',
 })
 export class MiningService {
+  private blockchain = inject(Blockchain);
+
   // Predefined miners with different mining speeds and colors
   private readonly defaultMiners: Miner[] = [
     {
@@ -46,11 +48,11 @@ export class MiningService {
 
   private stopMining = false;
 
-  constructor(private blockchain: Blockchain) {}
+  // No constructor needed; using inject() for DI
 
   toggleMiner(minerId: string): void {
     this.miners.update((miners) =>
-      miners.map((m) => (m.id === minerId ? { ...m, isActive: !m.isActive } : m))
+      miners.map((m) => (m.id === minerId ? { ...m, isActive: !m.isActive } : m)),
     );
   }
 
@@ -64,7 +66,7 @@ export class MiningService {
     blockNumber: number,
     previousHash: string,
     difficulty: number,
-    transactions: Transaction[]
+    transactions: Transaction[],
   ): Promise<MiningResult> {
     this.isRacing.set(true);
     this.stopMining = false;
@@ -102,7 +104,7 @@ export class MiningService {
               nonce,
               '',
               previousHash,
-              transactions
+              transactions,
             );
             attempts++;
 
@@ -128,8 +130,8 @@ export class MiningService {
               // Update miner stats
               this.miners.update((miners) =>
                 miners.map((m) =>
-                  m.id === miner.id ? { ...m, totalBlocksMined: m.totalBlocksMined + 1 } : m
-                )
+                  m.id === miner.id ? { ...m, totalBlocksMined: m.totalBlocksMined + 1 } : m,
+                ),
               );
 
               this.lastWinner.set(winner);

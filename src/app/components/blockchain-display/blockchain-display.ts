@@ -1,5 +1,5 @@
-import { Component, Input, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, signal, computed, inject } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { Block } from '../../models/blockchain.model';
 import { Blockchain } from '../../services/blockchain';
@@ -8,11 +8,14 @@ import { ForkTabs } from '../fork-tabs/fork-tabs';
 
 @Component({
   selector: 'app-blockchain-display',
-  imports: [CommonModule, FormsModule, ForkTabs],
+  imports: [FormsModule, ForkTabs],
   templateUrl: './blockchain-display.html',
   styleUrl: './blockchain-display.css',
 })
 export class BlockchainDisplay {
+  blockchainService = inject(Blockchain);
+  private forkService = inject(ForkService);
+
   @Input() blocks: Block[] = [];
 
   editingBlock = signal<number | null>(null);
@@ -27,14 +30,11 @@ export class BlockchainDisplay {
 
     if (!activeForkId) return [];
 
-    const activeFork = forks.find(f => f.id === activeForkId);
+    const activeFork = forks.find((f) => f.id === activeForkId);
     return activeFork ? activeFork.chain : [];
   });
 
-  constructor(
-    public blockchainService: Blockchain,
-    private forkService: ForkService
-  ) {}
+  // No constructor needed; using inject() for DI
 
   isBlockInvalid(blockNumber: number): boolean {
     return this.blockchainService.isBlockInvalid(blockNumber);

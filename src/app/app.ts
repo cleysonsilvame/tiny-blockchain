@@ -1,4 +1,4 @@
-import { Component, computed, signal, HostListener } from '@angular/core';
+import { Component, computed, signal, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MempoolSidebar } from './components/mempool-sidebar/mempool-sidebar';
 import { MiningBlock } from './components/mining-block/mining-block';
@@ -9,11 +9,20 @@ import { Blockchain } from './services/blockchain';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, MempoolSidebar, MiningBlock, BlockchainDisplay, WalletExplorer, StatsDashboard],
+  imports: [
+    CommonModule,
+    MempoolSidebar,
+    MiningBlock,
+    BlockchainDisplay,
+    WalletExplorer,
+    StatsDashboard,
+  ],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class App {
+  blockchainService = inject(Blockchain);
+
   mempool = computed(() => this.blockchainService.mempool());
   blockchain = computed(() => this.blockchainService.blockchain());
   currentBlockNumber = computed(() => this.blockchainService.currentBlockNumber());
@@ -38,22 +47,22 @@ export class App {
   activeResizer = signal<'left' | 'right' | 'vertical' | null>(null);
 
   rightPanelStyle = computed(() => ({
-    width: `${this.rightPanelWidth()}px`
+    width: `${this.rightPanelWidth()}px`,
   }));
 
   mempoolStyle = computed(() => ({
-    width: `${this.mempoolWidth()}px`
+    width: `${this.mempoolWidth()}px`,
   }));
 
   miningBlockStyle = computed(() => ({
-    flexBasis: `${this.miningBlockHeight()}%`
+    flexBasis: `${this.miningBlockHeight()}%`,
   }));
 
   blockchainDisplayStyle = computed(() => ({
-    flexBasis: `${100 - this.miningBlockHeight()}%`
+    flexBasis: `${100 - this.miningBlockHeight()}%`,
   }));
 
-  constructor(public blockchainService: Blockchain) {}
+  // No constructor needed; using inject() for DI
 
   get difficulty() {
     return this.blockchainService.getDifficulty();
@@ -107,7 +116,10 @@ export class App {
       const containerHeight = this.resizeContainerHeight();
       if (containerHeight > 0) {
         const deltaPercentage = (deltaY / containerHeight) * 100;
-        const newPercentage = Math.max(20, Math.min(80, this.resizeStartPercentage() + deltaPercentage));
+        const newPercentage = Math.max(
+          20,
+          Math.min(80, this.resizeStartPercentage() + deltaPercentage),
+        );
         this.miningBlockHeight.set(newPercentage);
       }
     }

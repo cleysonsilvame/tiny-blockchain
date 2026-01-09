@@ -1,4 +1,4 @@
-import { Component, Input, signal, OnInit, OnChanges, computed } from '@angular/core';
+import { Component, Input, signal, OnInit, OnChanges, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Block, Transaction } from '../../models/blockchain.model';
 import { Blockchain } from '../../services/blockchain';
@@ -14,11 +14,15 @@ import { MiningRace } from '../mining-race/mining-race';
   standalone: true,
 })
 export class MiningBlock implements OnInit, OnChanges {
+  private blockchainService = inject(Blockchain);
+  private miningService = inject(MiningService);
+  private forkService = inject(ForkService);
+
   @Input() blockNumber!: number;
   @Input() previousHash!: string;
   @Input() difficulty!: number;
   @Input() pendingTransactions: Transaction[] = [];
-  @Input() minerAddress: string = '';
+  @Input() minerAddress = '';
 
   nonce = signal<number>(0);
   data = signal<string>('');
@@ -30,17 +34,17 @@ export class MiningBlock implements OnInit, OnChanges {
   selectedForkId = signal<string>('main'); // Selected fork to mine on
   showRewardTooltip = signal<boolean>(false);
 
-  totalFees = computed(() => this.blockchainService.calculateTotalFees(this.selectedTransactions()));
-  totalReward = computed(() => this.blockchainService.calculateBlockReward(this.selectedTransactions()));
+  totalFees = computed(() =>
+    this.blockchainService.calculateTotalFees(this.selectedTransactions()),
+  );
+  totalReward = computed(() =>
+    this.blockchainService.calculateBlockReward(this.selectedTransactions()),
+  );
   blockReward = computed(() => this.blockchainService.getBlockReward());
   isRacing = computed(() => this.miningService.isRacing());
   availableForks = computed(() => this.forkService.forks());
 
-  constructor(
-    private blockchainService: Blockchain,
-    private miningService: MiningService,
-    private forkService: ForkService
-  ) {}
+  // No constructor needed; using inject() for DI
 
   ngOnInit(): void {
     this.updateHash();
@@ -57,7 +61,7 @@ export class MiningBlock implements OnInit, OnChanges {
       this.nonce(),
       this.data(),
       this.previousHash,
-      txs
+      txs,
     );
     this.currentHash.set(hash);
     this.isValid.set(hash.startsWith('0'.repeat(this.difficulty)));
@@ -100,7 +104,7 @@ export class MiningBlock implements OnInit, OnChanges {
             currentNonce,
             this.data(),
             this.previousHash,
-            txsToInclude
+            txsToInclude,
           );
 
           if (hash.startsWith(targetPrefix)) {
@@ -119,7 +123,7 @@ export class MiningBlock implements OnInit, OnChanges {
                 transactions: txsToInclude,
                 minerAddress: this.minerAddress || this.blockchainService.getDefaultMinerAddress(),
                 reward: this.blockchainService.calculateBlockReward(txsToInclude),
-                timestamp: Date.now()
+                timestamp: Date.now(),
               };
 
               // Add to selected fork or main chain
@@ -161,7 +165,7 @@ export class MiningBlock implements OnInit, OnChanges {
         this.blockNumber,
         this.previousHash,
         this.difficulty,
-        txsToInclude
+        txsToInclude,
       );
 
       // Winner found!
@@ -180,7 +184,7 @@ export class MiningBlock implements OnInit, OnChanges {
           transactions: txsToInclude,
           minerAddress: result.winner.address,
           reward: this.blockchainService.calculateBlockReward(txsToInclude),
-          timestamp: result.timestamp
+          timestamp: result.timestamp,
         };
 
         // Add to selected fork or main chain
@@ -205,8 +209,7 @@ export class MiningBlock implements OnInit, OnChanges {
 
   toggleMiningMode(): void {
     if (!this.isMining()) {
-      this.miningMode.update(mode => mode === 'single' ? 'race' : 'single');
+      this.miningMode.update((mode) => (mode === 'single' ? 'race' : 'single'));
     }
   }
 }
-
