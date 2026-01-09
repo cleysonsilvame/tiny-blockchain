@@ -2,6 +2,8 @@
 
 Ferramenta educacional interativa para entender o funcionamento de blockchain, mineração e proof-of-work.
 
+![Tiny Blockchain Screenshot](.github/images/screenshot.png)
+
 ## 🚀 Funcionalidades
 
 ### 📦 Core Blockchain
