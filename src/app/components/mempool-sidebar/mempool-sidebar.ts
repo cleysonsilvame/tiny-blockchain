@@ -72,7 +72,7 @@ export class MempoolSidebar implements OnDestroy {
   selectSender(): string {
     if (this.generationMode() === 'realistic') {
       const activeWallets = this.blockchainService.getActiveWallets();
-      
+
       // Se não houver carteiras ativas, usa aleatório
       if (activeWallets.length === 0) {
         return this.generateRandomAddress();
@@ -84,7 +84,7 @@ export class MempoolSidebar implements OnDestroy {
         return wallet.address;
       }
     }
-    
+
     return this.generateRandomAddress();
   }
 
@@ -93,13 +93,13 @@ export class MempoolSidebar implements OnDestroy {
     if (this.generationMode() === 'realistic') {
       const allAddresses = this.blockchainService.getAllAddresses();
       const otherAddresses = allAddresses.filter((addr) => addr !== sender);
-      
+
       // Se há outros endereços na blockchain, prefere um deles
       if (otherAddresses.length > 0 && Math.random() < 0.6) {
         return otherAddresses[Math.floor(Math.random() * otherAddresses.length)];
       }
     }
-    
+
     return this.generateRandomAddress();
   }
 
@@ -131,7 +131,6 @@ export class MempoolSidebar implements OnDestroy {
     this.receiver.set('');
     this.amount.set('');
     this.fee.set('0.0001');
-    this.newTxPopover?.close();
   }
 
   toggleAutoGenerate(): void {
