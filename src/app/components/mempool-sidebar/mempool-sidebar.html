@@ -1,0 +1,203 @@
+<div class="bg-slate-900 border-r border-slate-700 h-full flex flex-col flex-1"
+  (document:click)="closeAllPopovers()">
+  <!-- Header -->
+  <div class="p-6 border-b border-slate-700 relative">
+    <div class="flex items-center justify-between mb-2">
+      <div class="flex items-center gap-3">
+        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+        <h2 class="text-xl font-semibold text-white">Mempool</h2>
+      </div>
+
+      <!-- Fee Priority Toggle -->
+      <button (click)="blockchainService.toggleMempoolPrioritization()"
+        class="px-3 py-1 rounded text-xs font-medium transition-all flex items-center gap-1.5"
+        [class.bg-emerald-600]="isPrioritized()" [class.text-white]="isPrioritized()"
+        [class.bg-slate-700]="!isPrioritized()" [class.text-slate-400]="!isPrioritized()">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          @if (isPrioritized()) {
+          <polyline points="18 15 12 9 6 15" />
+          } @else {
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <polyline points="18 13 12 19 6 13" />
+          }
+        </svg>
+        {{ isPrioritized() ? 'Taxa Alta' : 'Ordem' }}
+      </button>
+    </div>
+
+    <div class="text-sm text-slate-400 mb-4">
+      Transações Pendentes: <span class="text-white font-semibold">{{ transactions().length }}</span>
+      @if (isPrioritized()) {
+      <span class="text-emerald-400 ml-2">• Priorizadas por taxa</span>
+      }
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex gap-2 relative">
+      <!-- Nova TX Popover -->
+      <app-popover #newTxPopover>
+        <button appPopoverTrigger (click)="autoPopover?.close(); newTxPopover?.toggle(); $event.stopPropagation()"
+          class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-1.5 px-2 rounded-lg font-medium text-xs flex items-center justify-center gap-1.5 min-w-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Nova TX
+        </button>
+
+        <div appPopoverContent
+          class="fixed bg-slate-800 rounded-lg p-6 w-80 border border-slate-600 shadow-2xl z-[9999] mt-1"
+          (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-white">Nova Transação</h3>
+            <button (click)="newTxPopover?.close()" class="text-slate-400 hover:text-white">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <form (submit)="submitTransaction($event)" class="space-y-3">
+            <div>
+              <label class="block text-slate-300 text-xs mb-1.5">Remetente</label>
+              <input type="text" [value]="sender()" (input)="sender.set($any($event.target).value)"
+                placeholder="1A1zP1eP5QGefi2DMPTfTL..."
+                class="w-full bg-slate-700 border border-slate-600 text-white font-mono text-xs rounded-md px-3 py-1.5">
+            </div>
+
+            <div>
+              <label class="block text-slate-300 text-xs mb-1.5">Destinatário</label>
+              <input type="text" [value]="receiver()" (input)="receiver.set($any($event.target).value)"
+                placeholder="3J98t1WpEZ73CNmYviecrnyiWrnq..."
+                class="w-full bg-slate-700 border border-slate-600 text-white font-mono text-xs rounded-md px-3 py-1.5">
+            </div>
+
+            <div>
+              <label class="block text-slate-300 text-xs mb-1.5">Valor (BTC)</label>
+              <input type="number" step="0.001" [value]="amount()" (input)="amount.set($any($event.target).value)"
+                placeholder="0.5"
+                class="w-full bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-1.5 text-sm">
+            </div>
+
+            <div>
+              <label class="block text-slate-300 text-xs mb-1.5">Taxa (BTC)</label>
+              <input type="number" step="0.00001" [value]="fee()" (input)="fee.set($any($event.target).value)"
+                placeholder="0.0001"
+                class="w-full bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-1.5 text-sm">
+              <div class="text-xs text-slate-500 mt-0.5">Maior taxa = maior prioridade</div>
+            </div>
+
+            <div class="flex gap-2">
+              <button type="button" (click)="fillRandomData()"
+                class="flex-1 bg-slate-600 hover:bg-slate-500 text-white py-1.5 rounded-md text-sm">
+                Aleatório
+              </button>
+
+              <button type="submit" [disabled]="!sender() || !receiver() || !amount()"
+                class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 text-white py-1.5 rounded-md text-sm disabled:cursor-not-allowed">
+                Adicionar
+              </button>
+            </div>
+          </form>
+        </div>
+      </app-popover>
+
+      <!-- Auto Popover -->
+      <app-popover #autoPopover>
+        <button appPopoverTrigger (click)="newTxPopover?.close(); autoPopover?.toggle(); $event.stopPropagation()"
+          [class.bg-emerald-600]="!autoGenerate()" [class.hover:bg-emerald-700]="!autoGenerate()"
+          [class.bg-red-600]="autoGenerate()" [class.hover:bg-red-700]="autoGenerate()"
+          class="flex-1 text-white py-1.5 px-2 rounded-lg font-medium text-xs flex items-center justify-center gap-1.5 min-w-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            @if (autoGenerate()) {
+            <rect x="6" y="6" width="12" height="12" />
+            } @else {
+            <polygon points="5 3 19 12 5 21 5 3" />
+            }
+          </svg>
+          {{ autoGenerate() ? 'Auto ON' : 'Auto' }}
+        </button>
+
+        <div appPopoverContent
+          class="fixed bg-slate-800 rounded-lg p-6 w-80 border border-slate-600 shadow-2xl z-[9999] mt-1"
+          (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-white">Modo Automático</h3>
+            <button (click)="autoPopover?.close()" class="text-slate-400 hover:text-white">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="space-y-3">
+            <div class="bg-slate-700 rounded-lg p-3">
+              <p class="text-sm text-slate-300 mb-3">
+                Gera automaticamente transações aleatórias no intervalo configurado.
+              </p>
+
+              <div class="mb-3">
+                <label class="block text-slate-300 text-xs mb-1.5">Intervalo (segundos)</label>
+                <input type="number" min="1" max="60" [value]="autoGenerateInterval() / 1000"
+                  (input)="autoGenerateInterval.set($any($event.target).value * 1000); updateAutoInterval()"
+                  class="w-full bg-slate-600 border border-slate-500 text-white rounded-md px-3 py-1.5 text-sm">
+                <div class="text-xs text-slate-400 mt-0.5">Entre 1 e 60 segundos</div>
+              </div>
+
+              <button (click)="toggleAutoGenerate()" [class.bg-red-600]="autoGenerate()"
+                [class.hover:bg-red-700]="autoGenerate()" [class.bg-emerald-600]="!autoGenerate()"
+                [class.hover:bg-emerald-700]="!autoGenerate()"
+                class="w-full text-white py-1.5 rounded-md font-medium text-sm">
+                {{ autoGenerate() ? '⏹ Parar' : '▶ Iniciar' }}
+              </button>
+            </div>
+
+            @if (autoGenerate()) {
+            <div class="bg-emerald-950/30 border border-emerald-500/30 rounded-lg p-3">
+              <p class="text-emerald-400 text-xs text-center font-medium">
+                ✓ Ativa
+              </p>
+              <p class="text-emerald-300/70 text-xs text-center mt-1">
+                A cada {{ autoGenerateInterval() / 1000 }}s
+              </p>
+            </div>
+            }
+          </div>
+        </div>
+      </app-popover>
+    </div>
+  </div>
+
+  <!-- Transaction List -->
+  @if (transactions().length === 0) {
+    <div class="flex-1 flex items-center justify-center">
+      <div class="text-center text-slate-500 p-6">
+        <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <p>Nenhuma transação no mempool</p>
+        <p class="text-xs mt-1">Crie transações manualmente ou ative o modo automático</p>
+      </div>
+    </div>
+  } @else {
+    <div class="flex-1 overflow-y-auto p-6">
+      <div class="flex flex-col gap-3">
+        @for (tx of sortedTransactions(); track tx.id; let i = $index) {
+          <app-transaction-card
+            class="block relative"
+            [sender]="tx.sender"
+            [receiver]="tx.receiver"
+            [amount]="tx.amount"
+            [fee]="tx.fee"
+            [prioritized]="isPrioritized() && i === 0">
+          </app-transaction-card>
+        }
+      </div>
+    </div>
+  }
+</div>
