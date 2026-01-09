@@ -1,4 +1,4 @@
-# Blockchain Visualizer - Angular
+# Tiny Blockchain - Angular
 
 Ferramenta educacional interativa para entender o funcionamento de blockchain, mineração e proof-of-work.
 
@@ -6,7 +6,7 @@ Ferramenta educacional interativa para entender o funcionamento de blockchain, m
 
 ### 📦 Core Blockchain
 
-- **Mineração de Blocos**: Proof-of-work com dificuldade configurável
+- **Mineração de Blocos**: Proof-of-work com dificuldade 4 (prefixo "0000")
 - **Mempool**: Pool de transações pendentes com sistema de taxas
 - **Hash SHA-256**: Cálculo de hash criptográfico usando crypto-js
 - **Validação de Cadeia**: Verificação de integridade da blockchain
@@ -15,28 +15,30 @@ Ferramenta educacional interativa para entender o funcionamento de blockchain, m
 
 - **Transações**: Transferências entre endereços com taxas configuráveis
 - **Recompensas de Mineração**: 6.25 BTC + taxas das transações
-- **Wallet Explorer**: Visualização de saldos e histórico de transações
-- **Priorização por Taxa**: Mempool ordenado por taxa (mineradores escolhem primeiro)
+- **Wallet Explorer**: Visualização de saldos e histórico de transações (counterparty completo)
+- **Priorização por Taxa**: Toggle para ordenar mempool por taxa (habilitado por padrão)
 
 ### 🏁 Mineração Competitiva
 
 - **Modo Solo**: Mineração individual com controle manual
-- **Modo Competição**: 4 mineradores simultâneos competindo
-- **Diferentes Hash Rates**: Alice (15k), Bob (12k), Charlie (10k), Diana (13k)
+- **Modo Competição**: 3 mineradores simultâneos competindo
+- **Diferentes Hash Rates**: Alice (15k), Bob (12k), Charlie (10k)
 - **Visualização em Tempo Real**: Progresso de cada minerador durante a corrida
+- **Batches Configuráveis**: Processamento em lotes para simular trabalho assíncrono
 
 ### 🔀 Sistema de Forks
 
 - **Criação de Forks**: Bifurcação da cadeia em pontos específicos
 - **Seleção de Fork**: Escolha em qual fork minerar novos blocos
 - **Consenso Automático**: Cadeia mais longa sempre vence
-- **Visualização de Múltiplas Cadeias**: Identificação visual de cada fork
+- **Visualização de Múltiplas Cadeias**: Identificação visual de cada fork com abas
 
 ### 🛡️ Demonstração de Segurança
 
 - **Tamper de Blocos**: Editar dados de blocos existentes (quebra integridade)
 - **Validação Visual**: Blocos inválidos destacados em vermelho
 - **Detecção de Alterações**: Verificação automática de hashes
+- **Invalidação Automática**: Edições marcam o bloco como inválido
 
 ### 📊 Dashboard de Estatísticas
 
@@ -44,8 +46,8 @@ Ferramenta educacional interativa para entender o funcionamento de blockchain, m
 - BTC em circulação
 - Tempo médio entre blocos
 - Hashrate da rede
-- Estatísticas por minerador
-- Total de transações e taxas
+- Estatísticas por minerador (blocos minerados)
+- Total de transações processadas e taxas coletadas
 
 ## 🎯 Como Usar
 
@@ -84,64 +86,94 @@ Ferramenta educacional interativa para entender o funcionamento de blockchain, m
 
 ## 🛠️ Tecnologias
 
-- **Angular 18+**: Framework principal com standalone components
-- **Signals**: Sistema reativo do Angular
-- **Tailwind CSS**: Estilização utilitária
+- **Angular 21**: Framework principal com standalone components
+- **Signals & Computed**: Sistema reativo do Angular para estado gerenciado
+- **Tailwind CSS 4**: Estilização utilitária com `@tailwindcss/postcss`
 - **crypto-js**: Hashing SHA-256
-- **TypeScript**: Tipagem estática
+- **TypeScript 5.9**: Tipagem estática
+- **ng-icons/lucide**: Ícones
+- **class-variance-authority & clsx**: Utilitários de estilo
+- **Vitest**: Test runner
 
-## Development server
+## 📁 Estrutura do Projeto
 
-To start a local development server, run:
-
-```bash
-ng serve
+```
+src/app/
+├── app.ts                    # Componente principal com layout e resize
+├── components/
+│   ├── blockchain-display/   # Exibição da cadeia de blocos
+│   ├── fork-tabs/            # Seletor de forks
+│   ├── fork-visualizer/      # Visualização de bifurcações
+│   ├── mempool-sidebar/      # Sidebar de transações pendentes
+│   ├── mining-block/         # Interface de mineração (solo/competição)
+│   ├── mining-race/          # Visualização da corrida de mineração
+│   ├── stats-dashboard/      # Dashboard de estatísticas
+│   ├── transaction-card/     # Card de transação individual
+│   ├── wallet-explorer/      # Explorador de carteiras e saldos
+│   └── ui/                   # Componentes UI reutilizáveis
+├── models/
+│   ├── blockchain.model.ts   # Interfaces Block e Transaction
+│   ├── fork.model.ts         # Interfaces Fork
+│   └── miner.model.ts        # Interfaces Miner e MiningProgress
+└── services/
+    ├── blockchain.ts         # Serviço principal de blockchain
+    ├── fork.service.ts       # Gerenciamento de forks
+    └── mining.service.ts     # Simulação de mineração competitiva
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`.
+## 🚀 Scripts Disponíveis
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### Desenvolvimento
 
 ```bash
-ng generate component component-name
+npm start
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Inicia o servidor de desenvolvimento em `http://localhost:4200/` com live reload.
+
+### Build
 
 ```bash
-ng generate --help
+npm run build
 ```
 
-## Building
+Compila o projeto para produção na pasta `dist/`.
 
-To build the project run:
+### Testes
 
 ```bash
-ng build
+npm test
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Executa os testes unitários com [Vitest](https://vitest.dev/).
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+### Lint
 
 ```bash
-ng test
+npm run lint        # Verifica problemas de lint
+npm run lint:fix    # Corrige problemas automaticamente
 ```
 
-## Running end-to-end tests
+## 📝 Convenções de Código
 
-For end-to-end (e2e) testing, run:
+- **Standalone Components**: Todos os componentes usam standalone API
+- **Dependency Injection**: Uso de `inject()` ao invés de constructor injection
+- **Signals**: Estado reativo com `signal()`, `computed()` e `effect()`
+- **Tailwind Utilities**: Estilização prioritariamente com classes utilitárias
+- **Conventional Commits**: Commits formatados (lowercase) conforme `.github/commit-instructions.md`
 
-```bash
-ng e2e
-```
+## 🧪 Testes
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Testes unitários cobrem:
+- Componentes principais (app, mining-block, mempool-sidebar, etc.)
+- Serviço de blockchain (adição de blocos, validação, tamper)
+- Lógica de transações e mempool
 
-## Additional Resources
+Execute com `npm test` para rodar todos os testes.
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## 📚 Recursos Adicionais
+
+- [Angular CLI](https://angular.dev/tools/cli)
+- [Angular Signals](https://angular.dev/guide/signals)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Vitest](https://vitest.dev/)
