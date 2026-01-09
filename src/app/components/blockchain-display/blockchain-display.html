@@ -1,0 +1,152 @@
+<div class="bg-slate-900 border-t border-slate-700 p-6 overflow-x-auto flex flex-col h-full">
+  <!-- Fork Tabs + Actions -->
+  <div class="flex items-center gap-3 mb-6">
+    <app-fork-tabs class="flex-1"></app-fork-tabs>
+
+    <!-- Validation Button -->
+    <button
+      (click)="validateBlockchain()"
+      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      Validar Blockchain
+    </button>
+  </div>
+
+  <!-- Validation Result -->
+  @if (showValidation() && validationResult()) {
+    <div class="mb-4 p-4 rounded-lg border-2 transition-all"
+         [class.bg-emerald-950/50]="validationResult()!.isValid"
+         [class.border-emerald-500]="validationResult()!.isValid"
+         [class.bg-red-950/50]="!validationResult()!.isValid"
+         [class.border-red-500]="!validationResult()!.isValid">
+      <div class="flex items-start gap-3">
+        @if (validationResult()!.isValid) {
+          <svg class="w-6 h-6 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <div class="text-emerald-400 font-semibold mb-1">✓ Blockchain Válida</div>
+            <div class="text-emerald-300 text-sm">
+              Todos os {{ displayBlocks().length }} blocos estão válidos. A integridade da cadeia está preservada.
+            </div>
+          </div>
+        } @else {
+          <svg class="w-6 h-6 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <div class="text-red-400 font-semibold mb-1">✗ Blockchain Inválida</div>
+            <div class="text-red-300 text-sm">
+              Encontrados {{ validationResult()!.invalidBlocks.length }} bloco(s) inválido(s):
+              #{{ validationResult()!.invalidBlocks.join(', #') }}
+            </div>
+            <div class="text-red-300/70 text-xs mt-1">
+              A integridade da cadeia foi comprometida. Blocos inválidos estão destacados em vermelho.
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="flex items-center gap-4 pb-4">
+    <div *ngFor="let block of displayBlocks(); let i = index" class="flex items-center">
+      <div class="bg-slate-800 rounded-lg p-4 min-w-[240px] shadow-lg border-2 transition-all"
+           [class.border-emerald-500/50]="!isBlockInvalid(block.number)"
+           [class.border-red-500]="isBlockInvalid(block.number)"
+           [class.bg-red-950/20]="isBlockInvalid(block.number)">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-sm font-semibold"
+               [class.text-emerald-400]="!isBlockInvalid(block.number)"
+               [class.text-red-400]="isBlockInvalid(block.number)">
+            Block #{{ block.number }}
+          </div>
+          <div class="px-2 py-1 text-xs rounded"
+               [class.bg-emerald-500/20]="!isBlockInvalid(block.number)"
+               [class.text-emerald-400]="!isBlockInvalid(block.number)"
+               [class.bg-red-500/20]="isBlockInvalid(block.number)"
+               [class.text-red-400]="isBlockInvalid(block.number)">
+            {{ isBlockInvalid(block.number) ? '✗ Invalid' : '✓ Valid' }}
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div>
+            <div class="text-xs text-slate-400">Nonce</div>
+            <div class="text-sm text-white font-mono">{{ block.nonce }}</div>
+          </div>
+
+          <div>
+            <div class="text-xs text-slate-400 mb-1">Data</div>
+            @if (editingBlock() === block.number) {
+              <input
+                type="text"
+                [(ngModel)]="editData"
+                class="w-full bg-slate-700 border border-slate-500 text-white text-sm rounded px-2 py-1"
+                placeholder="Edit block data">
+              <div class="flex gap-2 mt-2">
+                <button
+                  (click)="saveEdit(block.number)"
+                  class="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded">
+                  💥 Tamper
+                </button>
+                <button
+                  (click)="cancelEditing()"
+                  class="px-2 py-1 bg-slate-600 hover:bg-slate-500 text-white text-xs rounded">
+                  Cancelar
+                </button>
+              </div>
+            } @else {
+              <div class="flex items-center justify-between">
+                <div class="text-sm text-white truncate flex-1">{{ block.data || '(empty)' }}</div>
+                <button
+                  (click)="startEditing(block)"
+                  class="ml-2 px-2 py-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs rounded">
+                  ✏️
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="bg-purple-900/30 rounded px-2 py-1">
+            <div class="text-xs text-purple-300">Minerador</div>
+            <div class="text-xs text-white font-mono truncate">{{ block.minerAddress.slice(0, 12) }}...</div>
+            <div class="text-xs text-emerald-400 font-semibold mt-0.5">
+              Recompensa: {{ block.reward.toFixed(4) }} BTC
+            </div>
+          </div>
+
+          <div>
+            <div class="text-xs text-slate-400">Transações ({{ block.transactions.length }})</div>
+            <div *ngIf="block.transactions.length > 0" class="space-y-1 mt-1">
+              <div *ngFor="let tx of block.transactions" class="bg-slate-900/50 rounded px-2 py-1">
+                <div class="text-xs text-blue-300 font-mono truncate">
+                  {{ tx.sender.slice(0, 8) }}...
+                </div>
+                <div class="text-xs text-slate-400 flex items-center justify-between">
+                  <span>→ {{ tx.receiver.slice(0, 8) }}...</span>
+                  <span class="text-emerald-400 font-semibold">{{ tx.amount }} BTC</span>
+                </div>
+                <div class="text-xs text-slate-500">Taxa: {{ tx.fee.toFixed(6) }} BTC</div>
+              </div>
+            </div>
+            <div *ngIf="block.transactions.length === 0" class="text-xs text-slate-500 italic">
+              Sem transações
+            </div>
+          </div>
+
+          <div>
+            <div class="text-xs text-slate-400">Hash</div>
+            <div class="text-xs text-emerald-300 font-mono truncate">{{ block.hash }}</div>
+          </div>
+        </div>
+      </div>
+
+      <svg  class="w-6 h-6 text-slate-600 mx-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </div>
+  </div>
+</div>
