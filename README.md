@@ -5,35 +5,41 @@ Ferramenta educacional interativa para entender o funcionamento de blockchain, m
 ## 🚀 Funcionalidades
 
 ### 📦 Core Blockchain
+
 - **Mineração de Blocos**: Proof-of-work com dificuldade configurável
 - **Mempool**: Pool de transações pendentes com sistema de taxas
 - **Hash SHA-256**: Cálculo de hash criptográfico usando crypto-js
 - **Validação de Cadeia**: Verificação de integridade da blockchain
 
 ### 💰 Sistema Financeiro
+
 - **Transações**: Transferências entre endereços com taxas configuráveis
 - **Recompensas de Mineração**: 6.25 BTC + taxas das transações
 - **Wallet Explorer**: Visualização de saldos e histórico de transações
 - **Priorização por Taxa**: Mempool ordenado por taxa (mineradores escolhem primeiro)
 
 ### 🏁 Mineração Competitiva
+
 - **Modo Solo**: Mineração individual com controle manual
 - **Modo Competição**: 4 mineradores simultâneos competindo
 - **Diferentes Hash Rates**: Alice (15k), Bob (12k), Charlie (10k), Diana (13k)
 - **Visualização em Tempo Real**: Progresso de cada minerador durante a corrida
 
 ### 🔀 Sistema de Forks
+
 - **Criação de Forks**: Bifurcação da cadeia em pontos específicos
 - **Seleção de Fork**: Escolha em qual fork minerar novos blocos
 - **Consenso Automático**: Cadeia mais longa sempre vence
 - **Visualização de Múltiplas Cadeias**: Identificação visual de cada fork
 
 ### 🛡️ Demonstração de Segurança
+
 - **Tamper de Blocos**: Editar dados de blocos existentes (quebra integridade)
 - **Validação Visual**: Blocos inválidos destacados em vermelho
 - **Detecção de Alterações**: Verificação automática de hashes
 
 ### 📊 Dashboard de Estatísticas
+
 - Total de blocos minerados
 - BTC em circulação
 - Tempo médio entre blocos
@@ -44,27 +50,32 @@ Ferramenta educacional interativa para entender o funcionamento de blockchain, m
 ## 🎯 Como Usar
 
 ### 1. Criar Transações
+
 - **Manual**: Preencha sender, receiver, amount e fee
 - **Automático**: Ative geração automática de transações aleatórias
 - **Priorização**: Toggle para ordenar por taxa
 
 ### 2. Minerar Blocos
+
 1. Escolha o **modo de mineração** (Solo ou Competição)
 2. Se houver forks, **selecione qual fork minerar**
 3. Clique em "MINE BLOCK" ou "START MINING RACE"
 4. Aguarde o proof-of-work ser encontrado
 
 ### 3. Validar Integridade
+
 1. Clique em "Validar Blockchain" no header
 2. Veja resultado: cadeia válida ou blocos inválidos
 
 ### 4. Quebrar Integridade (Educacional)
+
 1. Clique no ícone ✏️ em qualquer bloco minerado
 2. Edite os dados do bloco
 3. Clique em "💥 Tamper"
 4. Valide novamente para ver o bloco ficar inválido
 
 ### 5. Criar e Trabalhar com Forks
+
 1. Clique em "Mostrar" no Fork Visualizer
 2. Crie um fork manualmente com "+ Criar Fork Manual"
 3. Selecione o fork desejado antes de minerar
