@@ -1,0 +1,4 @@
+/* Remove default Angular styles */
+:host {
+  display: contents;
+}
