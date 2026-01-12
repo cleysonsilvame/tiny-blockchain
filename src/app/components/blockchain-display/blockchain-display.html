@@ -1,14 +1,14 @@
-<div class="bg-slate-900 border-t border-slate-700 p-6 overflow-x-auto flex flex-col h-full">
+<div class="bg-slate-900 border-t border-slate-700 p-4 sm:p-6 overflow-x-auto flex flex-col h-full">
   <!-- Fork Tabs + Actions -->
-  <div class="flex items-center gap-3 mb-6">
-    <app-fork-tabs class="flex-1"></app-fork-tabs>
+  <div class="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 flex-wrap">
+    <app-fork-tabs class="flex-1 min-w-0"></app-fork-tabs>
 
     <!-- Validation Button -->
     <button
       (click)="validateBlockchain()"
-      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap"
+      class="px-2 sm:px-4 py-1 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all flex items-center gap-1 sm:gap-2 whitespace-nowrap text-xs sm:text-sm"
     >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -16,23 +16,23 @@
           d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
         />
       </svg>
-      Validar Blockchain
+      <span class="hidden xs:inline">Validar Blockchain</span>
     </button>
   </div>
 
   <!-- Validation Result -->
   @if (showValidation() && validationResult()) {
     <div
-      class="mb-4 p-4 rounded-lg border-2 transition-all"
+      class="mb-4 p-3 sm:p-4 rounded-lg border-2 transition-all text-sm"
       [class.bg-emerald-950/50]="validationResult()!.isValid"
       [class.border-emerald-500]="validationResult()!.isValid"
       [class.bg-red-950/50]="!validationResult()!.isValid"
       [class.border-red-500]="!validationResult()!.isValid"
     >
-      <div class="flex items-start gap-3">
+      <div class="flex items-start gap-2 sm:gap-3">
         @if (validationResult()!.isValid) {
           <svg
-            class="w-6 h-6 text-emerald-400 flex-shrink-0"
+            class="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400 flex-shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -45,15 +45,17 @@
             />
           </svg>
           <div>
-            <div class="text-emerald-400 font-semibold mb-1">✓ Blockchain Válida</div>
-            <div class="text-emerald-300 text-sm">
+            <div class="text-emerald-400 font-semibold mb-1 text-xs sm:text-sm">
+              ✓ Blockchain Válida
+            </div>
+            <div class="text-emerald-300 text-xs">
               Todos os {{ displayBlocks().length }} blocos estão válidos. A integridade da cadeia
               está preservada.
             </div>
           </div>
         } @else {
           <svg
-            class="w-6 h-6 text-red-400 flex-shrink-0"
+            class="w-5 h-5 sm:w-6 sm:h-6 text-red-400 flex-shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

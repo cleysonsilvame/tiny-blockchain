@@ -2,3 +2,64 @@
 :host {
   display: contents;
 }
+
+/* Smooth scrollbar appearance for all browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(71, 85, 105);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(100, 116, 139);
+}
+
+/* Mobile-first responsive improvements */
+@media (max-width: 767px) {
+  /* Reduce spacing on small screens */
+  * {
+    scroll-behavior: smooth;
+  }
+
+  /* Ensure inputs are at least 16px to avoid iOS zoom */
+  input,
+  select,
+  button,
+  textarea {
+    font-size: 16px;
+  }
+
+  /* Prevent horizontal scroll on mobile */
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Slightly reduce padding on tablets */
+  .p-6 {
+    padding: 1.25rem;
+  }
+}
+
+/* Desktop - maintain existing styles */
+@media (min-width: 1024px) {
+  /* Full spacing for desktop */
+}
+
+/* High resolution displays */
+@media (min-width: 1920px) {
+  /* Increase padding slightly on large screens */
+  .p-6 {
+    padding: 1.75rem;
+  }
+}

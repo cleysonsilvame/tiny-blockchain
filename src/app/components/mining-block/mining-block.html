@@ -1,6 +1,11 @@
-<div class="bg-slate-800 p-6 shadow-2xl min-h-full">
-  <div class="flex items-center gap-3 mb-6">
-    <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div class="bg-slate-800 p-4 sm:p-6 shadow-2xl min-h-full">
+  <div class="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+    <svg
+      class="w-6 h-6 sm:w-8 sm:h-8 text-blue-400 flex-shrink-0"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <rect x="4" y="4" width="16" height="16" rx="2" ry="2" />
       <rect x="9" y="9" width="6" height="6" />
       <line x1="9" y1="1" x2="9" y2="4" />
@@ -12,24 +17,28 @@
       <line x1="1" y1="9" x2="4" y2="9" />
       <line x1="1" y1="14" x2="4" y2="14" />
     </svg>
-    <h2 class="text-2xl font-semibold text-white">Block #{{ blockNumber }}</h2>
+    <h2 class="text-lg sm:text-2xl font-semibold text-white truncate">Block #{{ blockNumber }}</h2>
 
     @if (isValid()) {
-      <div class="ml-auto px-3 py-1 bg-emerald-500/20 text-emerald-400 text-sm rounded-full">
+      <div
+        class="ml-auto px-2 sm:px-3 py-1 bg-emerald-500/20 text-emerald-400 text-xs sm:text-sm rounded-full whitespace-nowrap"
+      >
         ✓ Valid
       </div>
     }
   </div>
 
-  <div class="space-y-4">
+  <div class="space-y-3 sm:space-y-4">
     <!-- Fork Selection -->
     @if (availableForks().length > 1) {
-      <div class="bg-slate-900 border border-slate-700 rounded-lg p-4">
-        <div class="text-sm font-semibold text-white mb-3">Selecionar Fork para Minerar</div>
+      <div class="bg-slate-900 border border-slate-700 rounded-lg p-3 sm:p-4">
+        <div class="text-xs sm:text-sm font-semibold text-white mb-3">
+          Selecionar Fork para Minerar
+        </div>
         <select
           [(ngModel)]="selectedForkId"
           [disabled]="isMining() || isRacing()"
-          class="w-full bg-slate-700 border border-slate-600 text-white rounded-md px-3 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          class="w-full bg-slate-700 border border-slate-600 text-white rounded-md px-2 sm:px-3 py-2 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           @for (fork of availableForks(); track fork.id) {
             <option [value]="fork.id">
@@ -49,13 +58,13 @@
     }
 
     <!-- Mining Mode Toggle -->
-    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4">
-      <div class="flex items-center justify-between mb-3">
-        <div class="text-sm font-semibold text-white">Modo de Mineração</div>
+    <div class="bg-slate-900 border border-slate-700 rounded-lg p-3 sm:p-4">
+      <div class="flex items-center justify-between mb-3 gap-2">
+        <div class="text-xs sm:text-sm font-semibold text-white">Modo de Mineração</div>
         <button
           (click)="toggleMiningMode()"
           [disabled]="isMining() || isRacing()"
-          class="px-4 py-2 rounded-lg font-medium text-sm transition-all"
+          class="px-3 sm:px-4 py-1 sm:py-2 rounded-lg font-medium text-xs sm:text-sm transition-all whitespace-nowrap"
           [class]="
             miningMode() === 'single'
               ? 'bg-blue-600 text-white hover:bg-blue-700'

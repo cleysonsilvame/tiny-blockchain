@@ -1,4 +1,4 @@
-import { Component, computed, signal, HostListener, inject } from '@angular/core';
+import { Component, computed, signal, HostListener, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MempoolSidebar } from './components/mempool-sidebar/mempool-sidebar';
 import { MiningBlock } from './components/mining-block/mining-block';
@@ -28,6 +28,15 @@ export class App {
   currentBlockNumber = computed(() => this.blockchainService.currentBlockNumber());
   previousHash = computed(() => this.blockchainService.previousHash());
 
+  // Responsive layout detection
+  viewportWidth = signal(typeof window !== 'undefined' ? window.innerWidth : 1280);
+  isMobile = computed(() => this.viewportWidth() < 1024); // < lg breakpoint
+  isTablet = computed(() => this.viewportWidth() >= 1024 && this.viewportWidth() < 1280); // lg to xl
+  isDesktop = computed(() => this.viewportWidth() >= 1280); // >= xl
+
+  // Mobile tab state
+  activeMobileTab = signal<'mempool' | 'mining' | 'blockchain' | 'stats' | 'wallet'>('mining');
+
   // Resize state for right sidebar
   rightPanelWidth = signal(384); // w-96 = 24rem = 384px
 
@@ -35,7 +44,7 @@ export class App {
   mempoolWidth = signal(384); // w-96 = 24rem = 384px
 
   // Resize state for mining-block height
-  miningBlockHeight = signal(80); // initial percentage (40% of container)
+  miningBlockHeight = signal(80); // initial percentage (80% of container)
 
   isResizing = signal(false);
   resizeStartX = signal(0);
@@ -62,13 +71,29 @@ export class App {
     flexBasis: `${100 - this.miningBlockHeight()}%`,
   }));
 
-  // No constructor needed; using inject() for DI
+  constructor() {
+    // Track window resize and update viewport width
+    if (typeof window !== 'undefined') {
+      effect(() => {
+        // This effect will re-run whenever the window resize event fires
+        this.viewportWidth();
+      });
+    }
+  }
 
   get difficulty() {
     return this.blockchainService.getDifficulty();
   }
 
+  // Mobile tab navigation
+  setActiveMobileTab(tab: 'mempool' | 'mining' | 'blockchain' | 'stats' | 'wallet') {
+    this.activeMobileTab.set(tab);
+  }
+
   onResizerMouseDown(event: MouseEvent) {
+    // Disable resizing on mobile/tablet
+    if (this.viewportWidth() < 1280) return;
+
     event.preventDefault();
     this.isResizing.set(true);
     this.resizeStartX.set(event.clientX);
@@ -77,6 +102,9 @@ export class App {
   }
 
   onLeftResizerMouseDown(event: MouseEvent) {
+    // Disable resizing on mobile/tablet
+    if (this.viewportWidth() < 1280) return;
+
     event.preventDefault();
     this.isResizing.set(true);
     this.resizeStartX.set(event.clientX);
@@ -85,6 +113,9 @@ export class App {
   }
 
   onVerticalResizerMouseDown(event: MouseEvent) {
+    // Disable resizing on mobile/tablet
+    if (this.viewportWidth() < 1280) return;
+
     event.preventDefault();
     const target = event.target as HTMLElement;
     const container = target.parentElement;
@@ -97,22 +128,78 @@ export class App {
     this.activeResizer.set('vertical');
   }
 
+  onResizerTouchStart(event: TouchEvent) {
+    // Disable resizing on mobile/tablet
+    if (this.viewportWidth() < 1280) return;
+
+    event.preventDefault();
+    this.isResizing.set(true);
+    this.resizeStartX.set(event.touches[0]?.clientX || 0);
+    this.resizeStartWidth.set(this.rightPanelWidth());
+    this.activeResizer.set('right');
+  }
+
+  onLeftResizerTouchStart(event: TouchEvent) {
+    // Disable resizing on mobile/tablet
+    if (this.viewportWidth() < 1280) return;
+
+    event.preventDefault();
+    this.isResizing.set(true);
+    this.resizeStartX.set(event.touches[0]?.clientX || 0);
+    this.resizeStartWidth.set(this.mempoolWidth());
+    this.activeResizer.set('left');
+  }
+
+  onVerticalResizerTouchStart(event: TouchEvent) {
+    // Disable resizing on mobile/tablet
+    if (this.viewportWidth() < 1280) return;
+
+    event.preventDefault();
+    const target = event.target as HTMLElement;
+    const container = target.parentElement;
+    if (container) {
+      this.resizeContainerHeight.set(container.clientHeight);
+    }
+    this.isResizing.set(true);
+    this.resizeStartY.set(event.touches[0]?.clientY || 0);
+    this.resizeStartPercentage.set(this.miningBlockHeight());
+    this.activeResizer.set('vertical');
+  }
+
+  @HostListener('window:resize', ['$event'])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onWindowResize(_event: Event) {
+    if (typeof window !== 'undefined') {
+      this.viewportWidth.set(window.innerWidth);
+      // Cancel any ongoing resize when window is resized
+      if (this.isResizing()) {
+        this.isResizing.set(false);
+        this.activeResizer.set(null);
+      }
+    }
+  }
+
   @HostListener('document:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent) {
+  @HostListener('document:touchmove', ['$event'])
+  onMouseMove(event: MouseEvent | TouchEvent) {
     if (!this.isResizing()) return;
 
     const resizer = this.activeResizer();
+    const clientX =
+      event instanceof MouseEvent ? event.clientX : (event as TouchEvent).touches[0]?.clientX || 0;
+    const clientY =
+      event instanceof MouseEvent ? event.clientY : (event as TouchEvent).touches[0]?.clientY || 0;
 
     if (resizer === 'right') {
-      const delta = event.clientX - this.resizeStartX();
+      const delta = clientX - this.resizeStartX();
       const newWidth = Math.max(300, Math.min(600, this.resizeStartWidth() - delta));
       this.rightPanelWidth.set(newWidth);
     } else if (resizer === 'left') {
-      const delta = event.clientX - this.resizeStartX();
+      const delta = clientX - this.resizeStartX();
       const newWidth = Math.max(250, Math.min(500, this.resizeStartWidth() + delta));
       this.mempoolWidth.set(newWidth);
     } else if (resizer === 'vertical') {
-      const deltaY = event.clientY - this.resizeStartY();
+      const deltaY = clientY - this.resizeStartY();
       const containerHeight = this.resizeContainerHeight();
       if (containerHeight > 0) {
         const deltaPercentage = (deltaY / containerHeight) * 100;
@@ -126,6 +213,7 @@ export class App {
   }
 
   @HostListener('document:mouseup')
+  @HostListener('document:touchend')
   onMouseUp() {
     this.isResizing.set(false);
     this.activeResizer.set(null);

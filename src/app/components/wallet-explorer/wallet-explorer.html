@@ -1,12 +1,17 @@
 <div class="w-full h-full bg-slate-900 flex flex-col overflow-hidden">
   <!-- Header -->
-  <div class="p-6 border-b border-slate-700">
-    <div class="flex items-center gap-3 mb-4">
-      <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div class="p-4 sm:p-6 border-b border-slate-700">
+    <div class="flex items-center gap-2 sm:gap-3 mb-4">
+      <svg
+        class="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
         <rect x="2" y="5" width="20" height="14" rx="2" />
         <line x1="2" y1="10" x2="22" y2="10" />
       </svg>
-      <h2 class="text-xl font-semibold text-white">Wallet Explorer</h2>
+      <h2 class="text-base sm:text-xl font-semibold text-white">Wallet Explorer</h2>
     </div>
 
     <!-- Search -->
@@ -17,12 +22,12 @@
         (input)="searchAddress.set($any($event.target).value)"
         (keyup.enter)="searchWallet()"
         placeholder="Digite um endereço..."
-        class="w-full bg-slate-800 border border-slate-600 text-white text-xs font-mono rounded-md px-3 py-2"
+        class="w-full bg-slate-800 border border-slate-600 text-white text-xs font-mono rounded-md px-2 sm:px-3 py-2"
       />
       <button
         (click)="searchWallet()"
         [disabled]="!searchAddress()"
-        class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-700 text-white py-2 rounded-md text-sm"
+        class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-700 text-white py-2 rounded-md text-xs sm:text-sm transition-colors"
       >
         Consultar Saldo
       </button>
@@ -31,40 +36,45 @@
 
   <!-- Balance Display -->
   @if (selectedAddress()) {
-    <div class="p-6 border-b border-slate-700 bg-slate-800/50">
+    <div class="p-4 sm:p-6 border-b border-slate-700 bg-slate-800/50">
       <div class="flex items-center justify-between mb-2">
-        <span class="text-sm text-slate-400">Saldo Atual</span>
-        <button (click)="clearSearch()" class="text-slate-400 hover:text-white text-xs">
+        <span class="text-xs sm:text-sm text-slate-400">Saldo Atual</span>
+        <button
+          (click)="clearSearch()"
+          class="text-slate-400 hover:text-white text-xs transition-colors"
+        >
           Limpar
         </button>
       </div>
-      <div class="text-3xl font-bold text-emerald-400 mb-3">{{ balance().toFixed(8) }} BTC</div>
-      <div class="text-xs font-mono text-slate-400 break-all">
+      <div class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-3">
+        {{ balance().toFixed(8) }} BTC
+      </div>
+      <div class="text-xs font-mono text-slate-400 break-all leading-tight">
         {{ selectedAddress() }}
       </div>
     </div>
   }
 
   <!-- History -->
-  <div class="flex-1 overflow-y-auto p-6">
+  <div class="flex-1 overflow-y-auto p-4 sm:p-6">
     @if (!selectedAddress()) {
       <div class="space-y-3">
-        <h3 class="text-sm font-semibold text-slate-300 mb-3">Endereços Ativos</h3>
+        <h3 class="text-xs sm:text-sm font-semibold text-slate-300 mb-3">Endereços Ativos</h3>
         @if (allAddresses().length === 0) {
-          <div class="text-center py-8 text-slate-500">
-            <p class="text-sm">Nenhum endereço encontrado</p>
+          <div class="text-center py-6 sm:py-8 text-slate-500">
+            <p class="text-xs sm:text-sm">Nenhum endereço encontrado</p>
             <p class="text-xs mt-1">Mine blocos para gerar endereços</p>
           </div>
         }
         @for (addr of allAddresses(); track addr) {
           <button
             (click)="selectAddress(addr)"
-            class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg p-3 text-left transition-colors"
+            class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg p-2 sm:p-3 text-left transition-colors"
           >
             <div class="text-xs font-mono text-blue-300 truncate mb-1">
               {{ addr }}
             </div>
-            <div class="text-sm font-semibold text-white">
+            <div class="text-xs sm:text-sm font-semibold text-white">
               {{ blockchainService.getBalance(addr).toFixed(4) }} BTC
             </div>
           </button>
@@ -74,17 +84,20 @@
 
     @if (selectedAddress() && history().length > 0) {
       <div class="space-y-3">
-        <h3 class="text-sm font-semibold text-slate-300 mb-3">Histórico de Transações</h3>
+        <h3 class="text-xs sm:text-sm font-semibold text-slate-300 mb-3">
+          Histórico de Transações
+        </h3>
         @for (item of history(); track item) {
-          <div class="bg-slate-800 rounded-lg p-3 border border-slate-700">
+          <div class="bg-slate-800 rounded-lg p-2 sm:p-3 border border-slate-700">
             <!-- Mining Reward -->
             @if (item.type === 'mining_reward') {
               <div class="space-y-1">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs px-2 py-1 bg-purple-500/20 text-purple-400 rounded"
+                <div class="flex items-center justify-between gap-2">
+                  <span
+                    class="text-xs px-2 py-1 bg-purple-500/20 text-purple-400 rounded whitespace-nowrap"
                     >Mineração</span
                   >
-                  <span class="text-sm font-semibold text-emerald-400"
+                  <span class="text-xs sm:text-sm font-semibold text-emerald-400 truncate"
                     >+{{ item.amount.toFixed(8) }} BTC</span
                   >
                 </div>
@@ -94,13 +107,16 @@
             <!-- Sent Transaction -->
             @if (item.type === 'sent') {
               <div class="space-y-1">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded">Enviado</span>
-                  <span class="text-sm font-semibold text-red-400"
+                <div class="flex items-center justify-between gap-2">
+                  <span
+                    class="text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded whitespace-nowrap"
+                    >Enviado</span
+                  >
+                  <span class="text-xs sm:text-sm font-semibold text-red-400 truncate"
                     >-{{ (item.amount + (item.fee || 0)).toFixed(8) }} BTC</span
                   >
                 </div>
-                <div class="text-xs text-slate-400">
+                <div class="text-xs text-slate-400 truncate">
                   Para: <span class="font-mono">{{ item.counterparty }}</span>
                 </div>
                 <div class="text-xs text-slate-500">Taxa: {{ item.fee?.toFixed(8) }} BTC</div>
@@ -110,15 +126,16 @@
             <!-- Received Transaction -->
             @if (item.type === 'received') {
               <div class="space-y-1">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded"
+                <div class="flex items-center justify-between gap-2">
+                  <span
+                    class="text-xs px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded whitespace-nowrap"
                     >Recebido</span
                   >
-                  <span class="text-sm font-semibold text-emerald-400"
+                  <span class="text-xs sm:text-sm font-semibold text-emerald-400 truncate"
                     >+{{ item.amount.toFixed(8) }} BTC</span
                   >
                 </div>
-                <div class="text-xs text-slate-400">
+                <div class="text-xs text-slate-400 truncate">
                   De: <span class="font-mono">{{ item.counterparty }}</span>
                 </div>
                 <div class="text-xs text-slate-400">Block #{{ item.blockNumber }}</div>
@@ -130,8 +147,8 @@
     }
 
     @if (selectedAddress() && history().length === 0) {
-      <div class="text-center py-8 text-slate-500">
-        <p class="text-sm">Nenhuma transação encontrada</p>
+      <div class="text-center py-6 sm:py-8 text-slate-500">
+        <p class="text-xs sm:text-sm">Nenhuma transação encontrada</p>
       </div>
     }
   </div>

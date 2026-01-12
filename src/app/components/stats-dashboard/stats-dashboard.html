@@ -1,6 +1,11 @@
-<div class="bg-slate-900 border-b border-slate-700 p-6 space-y-6">
-  <div class="flex items-center gap-3 mb-4">
-    <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div class="bg-slate-900 border-b border-slate-700 p-4 sm:p-6 space-y-6">
+  <div class="flex items-center gap-2 sm:gap-3 mb-4">
+    <svg
+      class="w-5 h-5 sm:w-6 sm:h-6 text-blue-400"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -8,71 +13,82 @@
         d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
       />
     </svg>
-    <h3 class="text-xl font-semibold text-white">Estatísticas da Rede</h3>
+    <h3 class="text-lg sm:text-xl font-semibold text-white">Estatísticas da Rede</h3>
   </div>
 
-  <!-- Quick Stats Grid -->
-  <div class="grid grid-cols-2 gap-4">
+  <!-- Quick Stats Grid: Responsive columns -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
     <!-- Total Blocks -->
-    <div class="bg-slate-800 rounded-lg p-4 border border-slate-700">
-      <div class="text-slate-400 text-sm mb-1">Total de Blocos</div>
-      <div class="text-2xl font-bold text-white">{{ formatNumber(totalBlocks()) }}</div>
+    <div class="bg-slate-800 rounded-lg p-3 sm:p-4 border border-slate-700">
+      <div class="text-slate-400 text-xs sm:text-sm mb-1">Total de Blocos</div>
+      <div class="text-xl sm:text-2xl font-bold text-white">{{ formatNumber(totalBlocks()) }}</div>
     </div>
 
     <!-- Total BTC -->
-    <div class="bg-slate-800 rounded-lg p-4 border border-slate-700">
-      <div class="text-slate-400 text-sm mb-1">BTC em Circulação</div>
-      <div class="text-2xl font-bold text-emerald-400">{{ formatBTC(totalBTC()) }}</div>
+    <div class="bg-slate-800 rounded-lg p-3 sm:p-4 border border-slate-700">
+      <div class="text-slate-400 text-xs sm:text-sm mb-1">BTC em Circulação</div>
+      <div class="text-xl sm:text-2xl font-bold text-emerald-400">{{ formatBTC(totalBTC()) }}</div>
     </div>
 
     <!-- Average Block Time -->
-    <div class="bg-slate-800 rounded-lg p-4 border border-slate-700">
-      <div class="text-slate-400 text-sm mb-1">Tempo Médio/Bloco</div>
-      <div class="text-2xl font-bold text-blue-400">{{ averageBlockTime() }}s</div>
+    <div class="bg-slate-800 rounded-lg p-3 sm:p-4 border border-slate-700">
+      <div class="text-slate-400 text-xs sm:text-sm mb-1">Tempo Médio/Bloco</div>
+      <div class="text-xl sm:text-2xl font-bold text-blue-400">{{ averageBlockTime() }}s</div>
     </div>
 
     <!-- Network Hashrate -->
-    <div class="bg-slate-800 rounded-lg p-4 border border-slate-700">
-      <div class="text-slate-400 text-sm mb-1">Hashrate da Rede</div>
-      <div class="text-2xl font-bold text-purple-400">
+    <div class="bg-slate-800 rounded-lg p-3 sm:p-4 border border-slate-700">
+      <div class="text-slate-400 text-xs sm:text-sm mb-1">Hashrate da Rede</div>
+      <div class="text-xl sm:text-2xl font-bold text-purple-400">
         {{ formatNumber(networkHashrate()) }} H/s
       </div>
     </div>
 
     <!-- Total Transactions -->
-    <div class="bg-slate-800 rounded-lg p-4 border border-slate-700">
-      <div class="text-slate-400 text-sm mb-1">Total de Transações</div>
-      <div class="text-2xl font-bold text-orange-400">{{ formatNumber(totalTransactions()) }}</div>
+    <div class="bg-slate-800 rounded-lg p-3 sm:p-4 border border-slate-700">
+      <div class="text-slate-400 text-xs sm:text-sm mb-1">Total de Transações</div>
+      <div class="text-xl sm:text-2xl font-bold text-orange-400">
+        {{ formatNumber(totalTransactions()) }}
+      </div>
     </div>
 
     <!-- Total Fees -->
-    <div class="bg-slate-800 rounded-lg p-4 border border-slate-700">
-      <div class="text-slate-400 text-sm mb-1">Total de Taxas</div>
-      <div class="text-2xl font-bold text-yellow-400">{{ formatBTC(totalFees()) }} BTC</div>
+    <div class="bg-slate-800 rounded-lg p-3 sm:p-4 border border-slate-700">
+      <div class="text-slate-400 text-xs sm:text-sm mb-1">Total de Taxas</div>
+      <div class="text-xl sm:text-2xl font-bold text-yellow-400">
+        {{ formatBTC(totalFees()) }} BTC
+      </div>
     </div>
   </div>
 
   <!-- Miner Statistics -->
   @if (totalBlocks() > 0) {
     <div class="border-t border-slate-700 pt-6">
-      <h4 class="text-lg font-semibold text-white mb-4">Blocos Minerados por Minerador</h4>
+      <h4 class="text-base sm:text-lg font-semibold text-white mb-4">
+        Blocos Minerados por Minerador
+      </h4>
 
       <div class="space-y-3">
         @for (stat of minerStats(); track stat.address) {
-          <div class="bg-slate-800 rounded-lg p-4 border border-slate-700">
+          <div class="bg-slate-800 rounded-lg p-3 sm:p-4 border border-slate-700">
             <!-- Miner Header -->
             <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-3">
-                <div class="w-3 h-3 rounded-full" [style.backgroundColor]="stat.color"></div>
-                <div>
-                  <div class="text-white font-semibold">{{ stat.name }}</div>
-                  <div class="text-xs text-slate-400 font-mono">
-                    {{ stat.address.slice(0, 12) }}...{{ stat.address.slice(-6) }}
+              <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div
+                  class="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+                  [style.backgroundColor]="stat.color"
+                ></div>
+                <div class="min-w-0">
+                  <div class="text-white font-semibold text-sm sm:text-base truncate">
+                    {{ stat.name }}
+                  </div>
+                  <div class="text-xs text-slate-400 font-mono truncate">
+                    {{ stat.address.slice(0, 8) }}...{{ stat.address.slice(-4) }}
                   </div>
                 </div>
               </div>
-              <div class="text-right">
-                <div class="text-2xl font-bold text-white">{{ stat.blocksMined }}</div>
+              <div class="text-right flex-shrink-0">
+                <div class="text-lg sm:text-2xl font-bold text-white">{{ stat.blocksMined }}</div>
                 <div class="text-xs text-slate-400">blocos</div>
               </div>
             </div>
@@ -89,14 +105,14 @@
             </div>
 
             <!-- Stats Row -->
-            <div class="flex items-center justify-between text-sm">
+            <div class="flex items-center justify-between text-xs sm:text-sm gap-2">
               <div class="text-slate-400">
                 <span class="font-semibold" [style.color]="stat.color"
                   >{{ stat.percentage.toFixed(1) }}%</span
                 >
                 da rede
               </div>
-              <div class="text-emerald-400 font-semibold">
+              <div class="text-emerald-400 font-semibold truncate">
                 {{ formatBTC(stat.totalRewards) }} BTC
               </div>
             </div>
@@ -107,9 +123,9 @@
   }
 
   @if (totalBlocks() === 0) {
-    <div class="text-center py-8 text-slate-400">
+    <div class="text-center py-6 sm:py-8 text-slate-400">
       <svg
-        class="w-16 h-16 mx-auto mb-3 opacity-50"
+        class="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 opacity-50"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -121,7 +137,7 @@
           d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
         />
       </svg>
-      <p class="text-sm">Mine alguns blocos para ver as estatísticas</p>
+      <p class="text-xs sm:text-sm">Mine alguns blocos para ver as estatísticas</p>
     </div>
   }
 </div>
