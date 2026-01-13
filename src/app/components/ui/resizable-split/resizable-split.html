@@ -1,27 +1,25 @@
-<div
-  class="flex h-full w-full"
-  [ngClass]="{ 'flex-row': direction() === 'horizontal', 'flex-col': direction() === 'vertical' }"
->
+<div class="flex h-full w-full" [ngClass]="{
+    'flex-row': direction() === 'horizontal',
+     'flex-col': direction() === 'vertical' }
+     ">
   <!-- START PANEL -->
-  <div
-    class="w-full h-full min-w-0 min-h-0"
-    [ngStyle]="panelStyle()"
-  >
+  <div class="w-full h-full min-w-0 min-h-0" [style.flex-basis.%]="size()">
     <ng-content select="[slot=start]" />
   </div>
 
   <!-- RESIZER -->
-  <div
-    [ngClass]="resizerClasses()"
-    (mousedown)="onResizerMouseDown($event)"
-    (touchstart)="onResizerTouchStart($event)"
-  ></div>
+  <div class="
+    bg-slate-700
+    hover:bg-slate-600
+    transition-colors shrink-0
+  " [ngClass]="{
+      'h-full w-1 cursor-col-resize': direction() === 'horizontal',
+      'h-1 w-full cursor-row-resize': direction() === 'vertical',
+      'bg-blue-500 cursor-grabbing': isResizing()
+    }" (mousedown)="onResizerMouseDown($event)" (touchstart)="onResizerTouchStart($event)"></div>
 
   <!-- END PANEL -->
-  <div
-    class="w-full h-full min-w-0 min-h-0"
-    [ngStyle]="secondPanelStyle()"
-  >
+  <div class="w-full h-full min-w-0 min-h-0" [style.flex-basis.%]="100 - size()">
     <ng-content select="[slot=end]" />
   </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, computed, HostListener, OnInit, input, signal } from '@angular/core';
+import { Component, HostListener, OnInit, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export type SplitDirection = 'horizontal' | 'vertical';
@@ -24,38 +24,8 @@ export class ResizableSplit implements OnInit {
   resizeStartSize = signal(0);
   resizeContainerSize = signal(0);
 
-  // Computed styles
-  resizerClasses = computed(() => {
-    const dir = this.direction();
-    return {
-      'h-full w-1 cursor-col-resize': dir === 'horizontal',
-      'h-1 w-full cursor-row-resize': dir === 'vertical',
-      'bg-slate-700 hover:bg-slate-600 transition-colors shrink-0': true,
-      'bg-blue-500': this.isResizing(),
-      'cursor-grabbing': this.isResizing(),
-    };
-  });
-
-  panelStyle = computed(() => {
-    const dir = this.direction();
-    const size = this.size();
-
-    if (dir === 'horizontal') {
-      return { flexBasis: `${size}%` };
-    } else {
-      return { flexBasis: `${size}%` };
-    }
-  });
-
-  secondPanelStyle = computed(() => {
-    const size = this.size();
-    return { flexBasis: `${100 - size}%` };
-  });
-
   ngOnInit(): void {
     this.size.set(this.initialRatio());
-
-    console.log(this)
   }
 
   onResizerMouseDown(event: MouseEvent) {
