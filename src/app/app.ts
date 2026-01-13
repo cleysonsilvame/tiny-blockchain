@@ -5,6 +5,7 @@ import { MiningBlock } from './components/mining-block/mining-block';
 import { BlockchainDisplay } from './components/blockchain-display/blockchain-display';
 import { WalletExplorer } from './components/wallet-explorer/wallet-explorer';
 import { StatsDashboard } from './components/stats-dashboard/stats-dashboard';
+import { HeaderComponent } from './components/header/header';
 import { Blockchain } from './services/blockchain';
 
 @Component({
@@ -16,6 +17,7 @@ import { Blockchain } from './services/blockchain';
     BlockchainDisplay,
     WalletExplorer,
     StatsDashboard,
+    HeaderComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',

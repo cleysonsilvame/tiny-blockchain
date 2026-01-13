@@ -1,54 +1,17 @@
 <div class="min-h-screen h-screen bg-slate-950 flex flex-col">
-  <!-- Header -->
-  <header class="
-    bg-slate-900 border-b border-slate-800 px-4
-    sm:px-6
-    lg:px-8
-    py-3
-    sm:py-4
-  ">
-    <div class="max-w-full">
-      <div class="
-        flex items-center gap-2
-        sm:gap-3
-        mb-1
-        sm:mb-2
-      ">
-        <h1 class="
-          text-xl
-          sm:text-2xl
-          lg:text-3xl
-          font-bold text-white
-        ">
-          Tiny Blockchain Visualizer
-        </h1>
-      </div>
+  <app-header />
 
-      <p class="
-        text-xs
-        sm:text-sm
-        text-slate-400
-      ">
-        Ferramenta educacional interativa para entender o funcionamento de blockchain, mineração e
-        proof-of-work.
-      </p>
-    </div>
-  </header>
-
-  <!-- Desktop Layout (xl and up: 1280px+) -->
   <div class="
     hidden
     xl:flex
     flex-1 min-h-0
   ">
-    <!-- Mempool Sidebar -->
     <app-mempool-sidebar
       class="overflow-hidden shrink-0 border-r border-slate-800"
       [ngStyle]="mempoolStyle()"
     >
     </app-mempool-sidebar>
 
-    <!-- Left Resizer Divider -->
     <div
       (mousedown)="onLeftResizerMouseDown($event)"
       (touchstart)="onLeftResizerTouchStart($event)"
@@ -61,9 +24,7 @@
       [class.cursor-grabbing]="isResizing() && activeResizer() === 'left'"
     ></div>
 
-    <!-- Center Mining Area -->
     <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
-      <!-- Mining Block -->
       <div
         class="border-b border-slate-800 overflow-auto shrink-0 grow-0"
         [ngStyle]="miningBlockStyle()"
@@ -79,7 +40,6 @@
         </app-mining-block>
       </div>
 
-      <!-- Vertical Resizer Divider -->
       <div
         (mousedown)="onVerticalResizerMouseDown($event)"
         (touchstart)="onVerticalResizerTouchStart($event)"
@@ -92,13 +52,11 @@
         [class.cursor-grabbing]="isResizing() && activeResizer() === 'vertical'"
       ></div>
 
-      <!-- Blockchain Display -->
       <div class="overflow-auto shrink-0 grow-0 min-h-0" [ngStyle]="blockchainDisplayStyle()">
         <app-blockchain-display></app-blockchain-display>
       </div>
     </div>
 
-    <!-- Right Resizer Divider -->
     <div
       (mousedown)="onResizerMouseDown($event)"
       (touchstart)="onResizerTouchStart($event)"
@@ -111,7 +69,6 @@
       [class.cursor-grabbing]="isResizing() && activeResizer() === 'right'"
     ></div>
 
-    <!-- Right Sidebar -->
     <div
       class="
         flex flex-col overflow-y-auto bg-slate-950 border-l border-slate-800
@@ -124,13 +81,11 @@
     </div>
   </div>
 
-  <!-- Mobile & Tablet Layout (under lg: under 1024px) -->
   <div class="
     flex
     xl:hidden
     flex-1 min-h-0 flex-col
   ">
-    <!-- Tab Navigation -->
     <div class="
       flex border-b border-slate-800 bg-slate-900 overflow-x-auto scrollbar-hide
     ">
@@ -206,7 +161,6 @@
       </button>
     </div>
 
-    <!-- Tab Content -->
     <div class="flex-1 overflow-hidden">
       @if (activeMobileTab() === 'mempool') {
         <app-mempool-sidebar class="w-full h-full overflow-auto"></app-mempool-sidebar>
