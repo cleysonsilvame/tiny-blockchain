@@ -1,14 +1,34 @@
 <div class="min-h-screen h-screen bg-slate-950 flex flex-col">
   <!-- Header -->
-  <header class="bg-slate-900 border-b border-slate-800 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+  <header class="
+    bg-slate-900 border-b border-slate-800 px-4
+    sm:px-6
+    lg:px-8
+    py-3
+    sm:py-4
+  ">
     <div class="max-w-full">
-      <div class="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-        <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
+      <div class="
+        flex items-center gap-2
+        sm:gap-3
+        mb-1
+        sm:mb-2
+      ">
+        <h1 class="
+          text-xl
+          sm:text-2xl
+          lg:text-3xl
+          font-bold text-white
+        ">
           Tiny Blockchain Visualizer
         </h1>
       </div>
 
-      <p class="text-xs sm:text-sm text-slate-400">
+      <p class="
+        text-xs
+        sm:text-sm
+        text-slate-400
+      ">
         Ferramenta educacional interativa para entender o funcionamento de blockchain, mineração e
         proof-of-work.
       </p>
@@ -16,7 +36,11 @@
   </header>
 
   <!-- Desktop Layout (xl and up: 1280px+) -->
-  <div class="hidden xl:flex flex-1 min-h-0">
+  <div class="
+    hidden
+    xl:flex
+    flex-1 min-h-0
+  ">
     <!-- Mempool Sidebar -->
     <app-mempool-sidebar
       class="overflow-hidden shrink-0 border-r border-slate-800"
@@ -29,7 +53,11 @@
       (mousedown)="onLeftResizerMouseDown($event)"
       (touchstart)="onLeftResizerTouchStart($event)"
       [class.bg-blue-500]="isResizing() && activeResizer() === 'left'"
-      class="h-full w-1 bg-slate-700 hover:bg-slate-600 cursor-col-resize transition-colors shrink-0"
+      class="
+        h-full w-1 bg-slate-700
+        hover:bg-slate-600
+        cursor-col-resize transition-colors shrink-0
+      "
       [class.cursor-grabbing]="isResizing() && activeResizer() === 'left'"
     ></div>
 
@@ -56,15 +84,16 @@
         (mousedown)="onVerticalResizerMouseDown($event)"
         (touchstart)="onVerticalResizerTouchStart($event)"
         [class.bg-blue-500]="isResizing() && activeResizer() === 'vertical'"
-        class="h-1 w-full bg-slate-700 hover:bg-slate-600 cursor-row-resize transition-colors shrink-0"
+        class="
+          h-1 w-full bg-slate-700
+          hover:bg-slate-600
+          cursor-row-resize transition-colors shrink-0
+        "
         [class.cursor-grabbing]="isResizing() && activeResizer() === 'vertical'"
       ></div>
 
       <!-- Blockchain Display -->
-      <div
-        class="overflow-auto shrink-0 grow-0 min-h-0"
-        [ngStyle]="blockchainDisplayStyle()"
-      >
+      <div class="overflow-auto shrink-0 grow-0 min-h-0" [ngStyle]="blockchainDisplayStyle()">
         <app-blockchain-display></app-blockchain-display>
       </div>
     </div>
@@ -74,13 +103,20 @@
       (mousedown)="onResizerMouseDown($event)"
       (touchstart)="onResizerTouchStart($event)"
       [class.bg-blue-500]="isResizing() && activeResizer() === 'right'"
-      class="h-full w-1 bg-slate-700 hover:bg-slate-600 cursor-col-resize transition-colors shrink-0"
+      class="
+        h-full w-1 bg-slate-700
+        hover:bg-slate-600
+        cursor-col-resize transition-colors shrink-0
+      "
       [class.cursor-grabbing]="isResizing() && activeResizer() === 'right'"
     ></div>
 
     <!-- Right Sidebar -->
     <div
-      class="flex flex-col overflow-y-auto bg-slate-950 border-l border-slate-800 shrink-0"
+      class="
+        flex flex-col overflow-y-auto bg-slate-950 border-l border-slate-800
+        shrink-0
+      "
       [ngStyle]="rightPanelStyle()"
     >
       <app-stats-dashboard />
@@ -89,16 +125,24 @@
   </div>
 
   <!-- Mobile & Tablet Layout (under lg: under 1024px) -->
-  <div class="flex xl:hidden flex-1 min-h-0 flex-col">
+  <div class="
+    flex
+    xl:hidden
+    flex-1 min-h-0 flex-col
+  ">
     <!-- Tab Navigation -->
-    <div class="flex border-b border-slate-800 bg-slate-900 overflow-x-auto scrollbar-hide">
+    <div class="
+      flex border-b border-slate-800 bg-slate-900 overflow-x-auto scrollbar-hide
+    ">
       <button
         (click)="setActiveMobileTab('mempool')"
         [class.bg-blue-600]="activeMobileTab() === 'mempool'"
         [class.bg-slate-800]="activeMobileTab() !== 'mempool'"
         [class.text-gray-400]="activeMobileTab() !== 'mempool'"
         [class.text-white]="activeMobileTab() === 'mempool'"
-        class="px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors"
+        class="
+          px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
+        "
         [class.border-blue-500]="activeMobileTab() === 'mempool'"
         [class.border-transparent]="activeMobileTab() !== 'mempool'"
       >
@@ -110,7 +154,9 @@
         [class.bg-slate-800]="activeMobileTab() !== 'mining'"
         [class.text-gray-400]="activeMobileTab() !== 'mining'"
         [class.text-white]="activeMobileTab() === 'mining'"
-        class="px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors"
+        class="
+          px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
+        "
         [class.border-blue-500]="activeMobileTab() === 'mining'"
         [class.border-transparent]="activeMobileTab() !== 'mining'"
       >
@@ -122,7 +168,9 @@
         [class.bg-slate-800]="activeMobileTab() !== 'blockchain'"
         [class.text-gray-400]="activeMobileTab() !== 'blockchain'"
         [class.text-white]="activeMobileTab() === 'blockchain'"
-        class="px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors"
+        class="
+          px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
+        "
         [class.border-blue-500]="activeMobileTab() === 'blockchain'"
         [class.border-transparent]="activeMobileTab() !== 'blockchain'"
       >
@@ -134,7 +182,9 @@
         [class.bg-slate-800]="activeMobileTab() !== 'stats'"
         [class.text-gray-400]="activeMobileTab() !== 'stats'"
         [class.text-white]="activeMobileTab() === 'stats'"
-        class="px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors"
+        class="
+          px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
+        "
         [class.border-blue-500]="activeMobileTab() === 'stats'"
         [class.border-transparent]="activeMobileTab() !== 'stats'"
       >
@@ -146,7 +196,9 @@
         [class.bg-slate-800]="activeMobileTab() !== 'wallet'"
         [class.text-gray-400]="activeMobileTab() !== 'wallet'"
         [class.text-white]="activeMobileTab() === 'wallet'"
-        class="px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors"
+        class="
+          px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
+        "
         [class.border-blue-500]="activeMobileTab() === 'wallet'"
         [class.border-transparent]="activeMobileTab() !== 'wallet'"
       >

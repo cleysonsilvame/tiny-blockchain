@@ -40,7 +40,9 @@
                 {{ fork.name }}
               </span>
               @if (fork.isMainChain) {
-                <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded">
+                <span class="
+                  px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded
+                ">
                   ✓ Cadeia Principal
                 </span>
               }
@@ -49,7 +51,11 @@
             @if (!fork.isMainChain && fork.id !== 'main') {
               <button
                 (click)="forkService.removeFork(fork.id)"
-                class="text-red-400 hover:text-red-300 text-xs"
+                class="
+                  text-red-400
+                  hover:text-red-300
+                  text-xs
+                "
               >
                 Remover
               </button>
@@ -73,7 +79,13 @@
       <button
         (click)="createFork()"
         [disabled]="blockchainData().length === 0"
-        class="w-full py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 text-white text-sm rounded transition-all disabled:cursor-not-allowed"
+        class="
+          w-full py-2 bg-purple-600
+          hover:bg-purple-700
+          disabled:bg-slate-700
+          text-white text-sm rounded transition-all
+          disabled:cursor-not-allowed
+        "
       >
         <span>+ Criar Fork Manual</span>
       </button>

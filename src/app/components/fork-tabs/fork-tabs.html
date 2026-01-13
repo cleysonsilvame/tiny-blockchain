@@ -4,7 +4,10 @@
       <button
         (click)="selectFork(fork.id)"
         [class.active]="activeForkId() === fork.id"
-        class="flex items-center gap-2 px-2 py-1 rounded-lg whitespace-nowrap transition-all text-white"
+        class="
+          flex items-center gap-2 px-2 py-1 rounded-lg whitespace-nowrap
+          transition-all text-white
+        "
         [style.border]="'2px solid ' + fork.color"
         [class.bg-slate-700]="activeForkId() === fork.id"
         [class.bg-slate-800]="activeForkId() !== fork.id"
@@ -23,14 +26,20 @@
 
         <!-- Main chain badge -->
         @if (fork.isMainChain) {
-          <span class="text-xs px-2 py-0.5 rounded bg-emerald-900 text-emerald-200"> Main </span>
+          <span class="
+            text-xs px-2 py-0.5 rounded bg-emerald-900 text-emerald-200
+          "> Main </span>
         }
 
         <!-- Delete button for non-main forks -->
         @if (fork.id !== 'main') {
           <button
             (click)="deleteFork(fork.id, $event)"
-            class="ml-1 text-slate-400 hover:text-red-400 hover:bg-red-900/20 rounded transition-colors"
+            class="
+              ml-1 text-slate-400
+              hover:text-red-400 hover:bg-red-900/20
+              rounded transition-colors
+            "
             title="Delete fork"
           >
             ×
@@ -43,7 +52,12 @@
     <button
       (click)="createFork()"
       [disabled]="blockchainData().length === 0"
-      class="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 disabled:cursor-not-allowed text-white transition-all flex-shrink-0"
+      class="
+        flex items-center justify-center w-8 h-8 rounded-lg bg-purple-600
+        hover:bg-purple-700
+        disabled:bg-slate-700 disabled:cursor-not-allowed
+        text-white transition-all flex-shrink-0
+      "
       title="Criar Fork Manual"
     >
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +70,11 @@
       <button
         (mouseenter)="showTooltip.set(true)"
         (mouseleave)="showTooltip.set(false)"
-        class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition-all"
+        class="
+          flex items-center justify-center w-8 h-8 rounded-lg bg-slate-700
+          hover:bg-slate-600
+          text-slate-300 transition-all
+        "
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -71,7 +89,10 @@
       <!-- Tooltip -->
       @if (showTooltip()) {
         <div
-          class="fixed bottom-auto right-auto mb-2 z-[100] w-64 px-3 py-2 text-xs text-white bg-slate-800 rounded-lg shadow-xl border border-slate-600"
+          class="
+            fixed bottom-auto right-auto mb-2 z-[100] w-64 px-3 py-2 text-xs
+            text-white bg-slate-800 rounded-lg shadow-xl border border-slate-600
+          "
           style="transform: translate(-100%, -100%); margin-top: -8px"
         >
           <p class="mb-1"><strong>💡 Consenso:</strong></p>
