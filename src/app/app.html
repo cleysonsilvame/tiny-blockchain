@@ -6,79 +6,37 @@
     xl:flex
     flex-1 min-h-0
   ">
-    <app-mempool-sidebar
-      class="overflow-hidden shrink-0 border-r border-slate-800"
-      [ngStyle]="mempoolStyle()"
-    >
-    </app-mempool-sidebar>
+    <app-resizable-split direction="horizontal" [initialRatio]="25" [minRatio]="15" [maxRatio]="40">
+      <app-mempool-sidebar class="h-full" slot="start" />
 
-    <div
-      (mousedown)="onLeftResizerMouseDown($event)"
-      (touchstart)="onLeftResizerTouchStart($event)"
-      [class.bg-blue-500]="isResizing() && activeResizer() === 'left'"
-      class="
-        h-full w-1 bg-slate-700
-        hover:bg-slate-600
-        cursor-col-resize transition-colors shrink-0
-      "
-      [class.cursor-grabbing]="isResizing() && activeResizer() === 'left'"
-    ></div>
+      <app-resizable-split direction="horizontal" [initialRatio]="70" [minRatio]="70" [maxRatio]="80" slot="end" class="
+        h-full
+      ">
+        <app-resizable-split direction="vertical" [initialRatio]="80" [minRatio]="20" [maxRatio]="80" slot="start" class="
+          h-full
+        ">
+          <div slot="start" class="
+            border-b border-slate-800 h-full overflow-auto
+          ">
+            <app-mining-block class="h-full" [blockNumber]="currentBlockNumber()" [previousHash]="previousHash()"
+              [difficulty]="difficulty" [pendingTransactions]="mempool()"
+              [minerAddress]="blockchainService.getDefaultMinerAddress()" />
+          </div>
 
-    <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
-      <div
-        class="border-b border-slate-800 overflow-auto shrink-0 grow-0"
-        [ngStyle]="miningBlockStyle()"
-      >
-        <app-mining-block
-          class="h-full block"
-          [blockNumber]="currentBlockNumber()"
-          [previousHash]="previousHash()"
-          [difficulty]="difficulty"
-          [pendingTransactions]="mempool()"
-          [minerAddress]="blockchainService.getDefaultMinerAddress()"
-        >
-        </app-mining-block>
-      </div>
+          <div slot="end" class="overflow-auto min-h-0 h-full">
+            <app-blockchain-display />
+          </div>
+        </app-resizable-split>
 
-      <div
-        (mousedown)="onVerticalResizerMouseDown($event)"
-        (touchstart)="onVerticalResizerTouchStart($event)"
-        [class.bg-blue-500]="isResizing() && activeResizer() === 'vertical'"
-        class="
-          h-1 w-full bg-slate-700
-          hover:bg-slate-600
-          cursor-row-resize transition-colors shrink-0
-        "
-        [class.cursor-grabbing]="isResizing() && activeResizer() === 'vertical'"
-      ></div>
-
-      <div class="overflow-auto shrink-0 grow-0 min-h-0" [ngStyle]="blockchainDisplayStyle()">
-        <app-blockchain-display></app-blockchain-display>
-      </div>
-    </div>
-
-    <div
-      (mousedown)="onResizerMouseDown($event)"
-      (touchstart)="onResizerTouchStart($event)"
-      [class.bg-blue-500]="isResizing() && activeResizer() === 'right'"
-      class="
-        h-full w-1 bg-slate-700
-        hover:bg-slate-600
-        cursor-col-resize transition-colors shrink-0
-      "
-      [class.cursor-grabbing]="isResizing() && activeResizer() === 'right'"
-    ></div>
-
-    <div
-      class="
-        flex flex-col overflow-y-auto bg-slate-950 border-l border-slate-800
-        shrink-0
-      "
-      [ngStyle]="rightPanelStyle()"
-    >
-      <app-stats-dashboard />
-      <app-wallet-explorer class="flex-1" />
-    </div>
+        <div slot="end" class="
+          h-full flex flex-col overflow-y-auto bg-slate-950 border-l
+          border-slate-800
+        ">
+          <app-stats-dashboard />
+          <app-wallet-explorer class="flex-1" />
+        </div>
+      </app-resizable-split>
+    </app-resizable-split>
   </div>
 
   <div class="
@@ -89,108 +47,74 @@
     <div class="
       flex border-b border-slate-800 bg-slate-900 overflow-x-auto scrollbar-hide
     ">
-      <button
-        (click)="setActiveMobileTab('mempool')"
-        [class.bg-blue-600]="activeMobileTab() === 'mempool'"
-        [class.bg-slate-800]="activeMobileTab() !== 'mempool'"
-        [class.text-gray-400]="activeMobileTab() !== 'mempool'"
-        [class.text-white]="activeMobileTab() === 'mempool'"
-        class="
+      <button (click)="setActiveMobileTab('mempool')" [class.bg-blue-600]="activeMobileTab() === 'mempool'"
+        [class.bg-slate-800]="activeMobileTab() !== 'mempool'" [class.text-gray-400]="activeMobileTab() !== 'mempool'"
+        [class.text-white]="activeMobileTab() === 'mempool'" class="
           px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
-        "
-        [class.border-blue-500]="activeMobileTab() === 'mempool'"
-        [class.border-transparent]="activeMobileTab() !== 'mempool'"
-      >
+        " [class.border-blue-500]="activeMobileTab() === 'mempool'"
+        [class.border-transparent]="activeMobileTab() !== 'mempool'">
         Mempool
       </button>
-      <button
-        (click)="setActiveMobileTab('mining')"
-        [class.bg-blue-600]="activeMobileTab() === 'mining'"
-        [class.bg-slate-800]="activeMobileTab() !== 'mining'"
-        [class.text-gray-400]="activeMobileTab() !== 'mining'"
-        [class.text-white]="activeMobileTab() === 'mining'"
-        class="
+      <button (click)="setActiveMobileTab('mining')" [class.bg-blue-600]="activeMobileTab() === 'mining'"
+        [class.bg-slate-800]="activeMobileTab() !== 'mining'" [class.text-gray-400]="activeMobileTab() !== 'mining'"
+        [class.text-white]="activeMobileTab() === 'mining'" class="
           px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
-        "
-        [class.border-blue-500]="activeMobileTab() === 'mining'"
-        [class.border-transparent]="activeMobileTab() !== 'mining'"
-      >
+        " [class.border-blue-500]="activeMobileTab() === 'mining'"
+        [class.border-transparent]="activeMobileTab() !== 'mining'">
         Mining
       </button>
-      <button
-        (click)="setActiveMobileTab('blockchain')"
-        [class.bg-blue-600]="activeMobileTab() === 'blockchain'"
+      <button (click)="setActiveMobileTab('blockchain')" [class.bg-blue-600]="activeMobileTab() === 'blockchain'"
         [class.bg-slate-800]="activeMobileTab() !== 'blockchain'"
         [class.text-gray-400]="activeMobileTab() !== 'blockchain'"
-        [class.text-white]="activeMobileTab() === 'blockchain'"
-        class="
+        [class.text-white]="activeMobileTab() === 'blockchain'" class="
           px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
-        "
-        [class.border-blue-500]="activeMobileTab() === 'blockchain'"
-        [class.border-transparent]="activeMobileTab() !== 'blockchain'"
-      >
+        " [class.border-blue-500]="activeMobileTab() === 'blockchain'"
+        [class.border-transparent]="activeMobileTab() !== 'blockchain'">
         Chain
       </button>
-      <button
-        (click)="setActiveMobileTab('stats')"
-        [class.bg-blue-600]="activeMobileTab() === 'stats'"
-        [class.bg-slate-800]="activeMobileTab() !== 'stats'"
-        [class.text-gray-400]="activeMobileTab() !== 'stats'"
-        [class.text-white]="activeMobileTab() === 'stats'"
-        class="
+      <button (click)="setActiveMobileTab('stats')" [class.bg-blue-600]="activeMobileTab() === 'stats'"
+        [class.bg-slate-800]="activeMobileTab() !== 'stats'" [class.text-gray-400]="activeMobileTab() !== 'stats'"
+        [class.text-white]="activeMobileTab() === 'stats'" class="
           px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
-        "
-        [class.border-blue-500]="activeMobileTab() === 'stats'"
-        [class.border-transparent]="activeMobileTab() !== 'stats'"
-      >
+        " [class.border-blue-500]="activeMobileTab() === 'stats'"
+        [class.border-transparent]="activeMobileTab() !== 'stats'">
         Stats
       </button>
-      <button
-        (click)="setActiveMobileTab('wallet')"
-        [class.bg-blue-600]="activeMobileTab() === 'wallet'"
-        [class.bg-slate-800]="activeMobileTab() !== 'wallet'"
-        [class.text-gray-400]="activeMobileTab() !== 'wallet'"
-        [class.text-white]="activeMobileTab() === 'wallet'"
-        class="
+      <button (click)="setActiveMobileTab('wallet')" [class.bg-blue-600]="activeMobileTab() === 'wallet'"
+        [class.bg-slate-800]="activeMobileTab() !== 'wallet'" [class.text-gray-400]="activeMobileTab() !== 'wallet'"
+        [class.text-white]="activeMobileTab() === 'wallet'" class="
           px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
-        "
-        [class.border-blue-500]="activeMobileTab() === 'wallet'"
-        [class.border-transparent]="activeMobileTab() !== 'wallet'"
-      >
+        " [class.border-blue-500]="activeMobileTab() === 'wallet'"
+        [class.border-transparent]="activeMobileTab() !== 'wallet'">
         Wallet
       </button>
     </div>
 
     <div class="flex-1 overflow-hidden">
       @if (activeMobileTab() === 'mempool') {
-        <app-mempool-sidebar class="w-full h-full overflow-auto"></app-mempool-sidebar>
+      <app-mempool-sidebar class="w-full h-full overflow-auto"></app-mempool-sidebar>
       }
       @if (activeMobileTab() === 'mining') {
-        <div class="w-full h-full overflow-auto">
-          <app-mining-block
-            [blockNumber]="currentBlockNumber()"
-            [previousHash]="previousHash()"
-            [difficulty]="difficulty"
-            [pendingTransactions]="mempool()"
-            [minerAddress]="blockchainService.getDefaultMinerAddress()"
-          >
-          </app-mining-block>
-        </div>
+      <div class="w-full h-full overflow-auto">
+        <app-mining-block [blockNumber]="currentBlockNumber()" [previousHash]="previousHash()" [difficulty]="difficulty"
+          [pendingTransactions]="mempool()" [minerAddress]="blockchainService.getDefaultMinerAddress()">
+        </app-mining-block>
+      </div>
       }
       @if (activeMobileTab() === 'blockchain') {
-        <div class="w-full h-full overflow-auto">
-          <app-blockchain-display></app-blockchain-display>
-        </div>
+      <div class="w-full h-full overflow-auto">
+        <app-blockchain-display></app-blockchain-display>
+      </div>
       }
       @if (activeMobileTab() === 'stats') {
-        <div class="w-full h-full overflow-auto">
-          <app-stats-dashboard></app-stats-dashboard>
-        </div>
+      <div class="w-full h-full overflow-auto">
+        <app-stats-dashboard></app-stats-dashboard>
+      </div>
       }
       @if (activeMobileTab() === 'wallet') {
-        <div class="w-full h-full overflow-auto">
-          <app-wallet-explorer></app-wallet-explorer>
-        </div>
+      <div class="w-full h-full overflow-auto">
+        <app-wallet-explorer></app-wallet-explorer>
+      </div>
       }
     </div>
   </div>
