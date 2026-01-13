@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, input, signal } from '@angular/core';
+import { Component, OnInit, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export type SplitDirection = 'horizontal' | 'vertical';
@@ -17,85 +17,76 @@ export class ResizableSplit implements OnInit {
   minRatio = input<number>(0);
   maxRatio = input<number>(100);
 
-  // State
-  size = signal(this.initialRatio());
-  isResizing = signal(false);
-  resizeStartPos = signal(0);
-  resizeStartSize = signal(0);
-  resizeContainerSize = signal(0);
+  splitPercent = signal(this.initialRatio());
+  isDragging = signal(false);
+  dragStartAxisPx = signal(0);
+  dragStartPercent = signal(0);
+  containerAxisPx = signal(0);
+  activePointerId: number | null = null;
 
   ngOnInit(): void {
-    this.size.set(this.initialRatio());
+    this.splitPercent.set(this.initialRatio());
   }
 
-  onResizerMouseDown(event: MouseEvent) {
-    if (event.cancelable) {
-      event.preventDefault();
-    }
-    const dir = this.direction();
-    const target = event.target as HTMLElement;
+  // PointerEvent-based handlers
+  onGutterPointerDown(event: PointerEvent) {
+    if (event.cancelable) event.preventDefault();
+    if (!event.isPrimary) return;
 
-    this.isResizing.set(true);
-    this.resizeStartPos.set(dir === 'horizontal' ? event.clientX : event.clientY);
-    this.resizeStartSize.set(this.size());
+    const resizerEl = event.currentTarget as HTMLElement | null;
+    const container = (event.target as HTMLElement | null)?.parentElement ?? null;
 
-    const container = target.parentElement;
+    this.isDragging.set(true);
+    this.activePointerId = event.pointerId;
+    this.dragStartAxisPx.set(this.getAxisPointerPosition(event));
+    this.dragStartPercent.set(this.splitPercent());
+
     if (container) {
-      this.resizeContainerSize.set(dir === 'horizontal' ? container.clientWidth : container.clientHeight);
+      this.containerAxisPx.set(this.getContainerAxisSize(container));
+    }
+
+    if (resizerEl && this.activePointerId !== null) {
+      resizerEl.setPointerCapture(this.activePointerId);
     }
   }
 
-  onResizerTouchStart(event: TouchEvent) {
-    if (event.cancelable) {
-      event.preventDefault();
-    }
-    const dir = this.direction();
-    const target = event.target as HTMLElement;
-    const touch = event.touches[0];
+  onGutterPointerMove(event: PointerEvent) {
+    // Only process moves for the active pointer during a drag capture
+    if (this.activePointerId === null || event.pointerId !== this.activePointerId) return;
 
-    if (!touch) return;
-
-    this.isResizing.set(true);
-    this.resizeStartPos.set(dir === 'horizontal' ? touch.clientX : touch.clientY);
-    this.resizeStartSize.set(this.size());
-
-    const container = target.parentElement;
-    if (container) {
-      this.resizeContainerSize.set(dir === 'horizontal' ? container.clientWidth : container.clientHeight);
+    const currentPx = this.getAxisPointerPosition(event);
+    const next = this.computeNextPercent(currentPx);
+    if (next !== null) {
+      this.splitPercent.set(next);
     }
   }
 
-  @HostListener('document:mousemove', ['$event'])
-  @HostListener('document:touchmove', ['$event'])
-  onMove(event: MouseEvent | TouchEvent) {
-    if (!this.isResizing()) return;
-
-    const dir = this.direction();
-    const pos =
-      event instanceof MouseEvent
-        ? dir === 'horizontal'
-          ? event.clientX
-          : event.clientY
-        : dir === 'horizontal'
-          ? event.touches[0]?.clientX
-          : event.touches[0]?.clientY || 0;
-
-    const delta = pos - this.resizeStartPos();
-    const containerSize = this.resizeContainerSize();
-
-    if (containerSize > 0) {
-      const deltaPercentage = (delta / containerSize) * 100;
-      const newPercentage = Math.max(
-        this.minRatio(),
-        Math.min(this.maxRatio(), this.resizeStartSize() + deltaPercentage),
-      );
-      this.size.set(newPercentage);
+  onGutterPointerUp(event: PointerEvent) {
+    if (this.activePointerId !== null && event.pointerId === this.activePointerId) {
+      const resizerEl = event.currentTarget as HTMLElement | null;
+      if (resizerEl) {
+        resizerEl.releasePointerCapture(this.activePointerId);
+      }
+      this.activePointerId = null;
     }
+    this.isDragging.set(false);
   }
 
-  @HostListener('document:mouseup')
-  @HostListener('document:touchend')
-  onEnd() {
-    this.isResizing.set(false);
+  // Helpers
+  private getAxisPointerPosition(event: PointerEvent): number {
+    return this.direction() === 'horizontal' ? event.clientX : event.clientY;
+  }
+
+  private getContainerAxisSize(el: HTMLElement): number {
+    return this.direction() === 'horizontal' ? el.clientWidth : el.clientHeight;
+  }
+
+  private computeNextPercent(currentPx: number): number | null {
+    const containerPx = this.containerAxisPx();
+    if (containerPx <= 0) return null;
+    const pointerOffsetPx = currentPx - this.dragStartAxisPx();
+    const offsetPercent = (pointerOffsetPx / containerPx) * 100;
+    const nextPercent = this.dragStartPercent() + offsetPercent;
+    return Math.max(this.minRatio(), Math.min(this.maxRatio(), nextPercent));
   }
 }
