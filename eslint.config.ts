@@ -6,9 +6,9 @@ import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss';
 import { getDefaultAttributes, getDefaultCallees, getDefaultTags, getDefaultVariables } from 'eslint-plugin-better-tailwindcss/defaults';
 import { MatcherType } from "eslint-plugin-better-tailwindcss/types";
 
-module.exports = defineConfig([
+export default defineConfig([
   {
-    files: ['**/*.ts'],
+    files: ['src/**/*.ts'],
     plugins: {
       "better-tailwindcss": eslintPluginBetterTailwindcss
     },
