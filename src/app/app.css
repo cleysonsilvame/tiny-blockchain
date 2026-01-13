@@ -3,25 +3,6 @@
   display: contents;
 }
 
-/* Smooth scrollbar appearance for all browsers */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgb(71, 85, 105);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgb(100, 116, 139);
-}
-
 /* Mobile-first responsive improvements */
 @media (max-width: 767px) {
   /* Reduce spacing on small screens */
