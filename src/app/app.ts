@@ -1,5 +1,8 @@
-import { Component, computed, signal, HostListener, inject, effect } from '@angular/core';
+import { Component, computed, signal, inject, afterNextRender, DestroyRef } from '@angular/core';
 import { CommonModule, NgComponentOutlet } from '@angular/common';
+import { fromEvent } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MempoolSidebar } from './components/mempool-sidebar/mempool-sidebar';
 import { MiningBlock } from './components/mining-block/mining-block';
 import { BlockchainDisplay } from './components/blockchain-display/blockchain-display';
@@ -10,6 +13,8 @@ import { ResizableSplit } from './components/ui/resizable-split/resizable-split'
 import { TabButton } from './components/ui/tab-button';
 import { Blockchain } from './services/blockchain';
 import { BlockchainTab, MempoolTab, MiningTab, StatsTab, WalletTab } from './tabs';
+
+type TabId = 'mempool' | 'mining' | 'blockchain' | 'stats' | 'wallet';
 
 @Component({
   selector: 'app-root',
@@ -29,21 +34,15 @@ import { BlockchainTab, MempoolTab, MiningTab, StatsTab, WalletTab } from './tab
   styleUrl: './app.css',
 })
 export class App {
+  private destroyRef = inject(DestroyRef);
   blockchainService = inject(Blockchain);
 
-  mempool = computed(() => this.blockchainService.mempool());
-  blockchain = computed(() => this.blockchainService.blockchain());
-  currentBlockNumber = computed(() => this.blockchainService.currentBlockNumber());
-  previousHash = computed(() => this.blockchainService.previousHash());
+  viewportWidth = signal(1280);
+  isMobile = computed(() => this.viewportWidth() < 1024);
+  isTablet = computed(() => this.viewportWidth() >= 1024 && this.viewportWidth() < 1280);
+  isDesktop = computed(() => this.viewportWidth() >= 1280);
 
-  // Responsive layout detection
-  viewportWidth = signal(typeof window !== 'undefined' ? window.innerWidth : 1280);
-  isMobile = computed(() => this.viewportWidth() < 1024); // < lg breakpoint
-  isTablet = computed(() => this.viewportWidth() >= 1024 && this.viewportWidth() < 1280); // lg to xl
-  isDesktop = computed(() => this.viewportWidth() >= 1280); // >= xl
-
-  // Mobile tab state
-  activeMobileTab = signal<'mempool' | 'mining' | 'blockchain' | 'stats' | 'wallet'>('mining');
+  activeMobileTab = signal<TabId>('mining');
 
   readonly tabComponents = {
     mempool: MempoolTab,
@@ -53,39 +52,28 @@ export class App {
     wallet: WalletTab,
   } as const;
 
-  // Computed component for the active tab
-  activeTabComponent = computed(() => {
-    return this.tabComponents[this.activeMobileTab()];
-  });
+  activeTabComponent = computed(() => this.tabComponents[this.activeMobileTab()]);
 
   constructor() {
-    // Track window resize and update viewport width
-    if (typeof window !== 'undefined') {
-      effect(() => {
-        // This effect will re-run whenever the window resize event fires
-        this.viewportWidth();
-      });
-    }
+    afterNextRender(() => {
+      this.viewportWidth.set(window.innerWidth);
+
+      fromEvent(window, 'resize')
+        .pipe(
+          debounceTime(150),
+          takeUntilDestroyed(this.destroyRef)
+        )
+        .subscribe(() => {
+          this.viewportWidth.set(window.innerWidth);
+        });
+    });
   }
 
-  get difficulty() {
-    return this.blockchainService.getDifficulty();
-  }
-
-  // Mobile tab navigation
-  setActiveMobileTab(tab: 'mempool' | 'mining' | 'blockchain' | 'stats' | 'wallet') {
+  setActiveMobileTab(tab: TabId) {
     this.activeMobileTab.set(tab);
   }
 
-  isTabActive(tab: 'mempool' | 'mining' | 'blockchain' | 'stats' | 'wallet'): boolean {
+  isTabActive(tab: TabId): boolean {
     return this.activeMobileTab() === tab;
-  }
-
-  @HostListener('window:resize', ['$event'])
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onWindowResize(_event: Event) {
-    if (typeof window !== 'undefined') {
-      this.viewportWidth.set(window.innerWidth);
-    }
   }
 }

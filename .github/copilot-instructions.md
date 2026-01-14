@@ -5,6 +5,7 @@
 - Reactive state with Angular `signal`/`computed`; keep derived values computed, mutate via `signal.set/update`.
 - Styling uses Tailwind utilities in component templates and `src/styles.css`.
 - Conventional commits, lowercase (see `.github/commit-instructions.md`).
+- **Avoid code comments** unless absolutely necessary; prefer self-documenting code (clear naming, small functions, type definitions).
 
 ## Core Architecture
 - `src/app/app.ts` wires layout: mempool sidebar, mining block, blockchain display, wallet explorer, stats dashboard. Resizing handled via signals; maintain min/max guards when changing.
