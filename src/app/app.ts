@@ -7,6 +7,7 @@ import { WalletExplorer } from './components/wallet-explorer/wallet-explorer';
 import { StatsDashboard } from './components/stats-dashboard/stats-dashboard';
 import { HeaderComponent } from './components/header/header';
 import { ResizableSplit } from './components/ui/resizable-split/resizable-split';
+import { TabButton } from './components/ui/tab-button';
 import { Blockchain } from './services/blockchain';
 import { BlockchainTab, MempoolTab, MiningTab, StatsTab, WalletTab } from './tabs';
 
@@ -22,6 +23,7 @@ import { BlockchainTab, MempoolTab, MiningTab, StatsTab, WalletTab } from './tab
     StatsDashboard,
     HeaderComponent,
     ResizableSplit,
+    TabButton,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',
@@ -73,6 +75,10 @@ export class App {
   // Mobile tab navigation
   setActiveMobileTab(tab: 'mempool' | 'mining' | 'blockchain' | 'stats' | 'wallet') {
     this.activeMobileTab.set(tab);
+  }
+
+  isTabActive(tab: 'mempool' | 'mining' | 'blockchain' | 'stats' | 'wallet'): boolean {
+    return this.activeMobileTab() === tab;
   }
 
   @HostListener('window:resize', ['$event'])

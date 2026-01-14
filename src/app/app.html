@@ -45,47 +45,31 @@
     <div class="
       flex border-b border-slate-800 bg-slate-900 overflow-x-auto scrollbar-hide
     ">
-      <button (click)="setActiveMobileTab('mempool')" [class.bg-blue-600]="activeMobileTab() === 'mempool'"
-        [class.bg-slate-800]="activeMobileTab() !== 'mempool'" [class.text-gray-400]="activeMobileTab() !== 'mempool'"
-        [class.text-white]="activeMobileTab() === 'mempool'" class="
-          px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
-        " [class.border-blue-500]="activeMobileTab() === 'mempool'"
-        [class.border-transparent]="activeMobileTab() !== 'mempool'">
-        Mempool
-      </button>
-      <button (click)="setActiveMobileTab('mining')" [class.bg-blue-600]="activeMobileTab() === 'mining'"
-        [class.bg-slate-800]="activeMobileTab() !== 'mining'" [class.text-gray-400]="activeMobileTab() !== 'mining'"
-        [class.text-white]="activeMobileTab() === 'mining'" class="
-          px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
-        " [class.border-blue-500]="activeMobileTab() === 'mining'"
-        [class.border-transparent]="activeMobileTab() !== 'mining'">
-        Mining
-      </button>
-      <button (click)="setActiveMobileTab('blockchain')" [class.bg-blue-600]="activeMobileTab() === 'blockchain'"
-        [class.bg-slate-800]="activeMobileTab() !== 'blockchain'"
-        [class.text-gray-400]="activeMobileTab() !== 'blockchain'"
-        [class.text-white]="activeMobileTab() === 'blockchain'" class="
-          px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
-        " [class.border-blue-500]="activeMobileTab() === 'blockchain'"
-        [class.border-transparent]="activeMobileTab() !== 'blockchain'">
-        Chain
-      </button>
-      <button (click)="setActiveMobileTab('stats')" [class.bg-blue-600]="activeMobileTab() === 'stats'"
-        [class.bg-slate-800]="activeMobileTab() !== 'stats'" [class.text-gray-400]="activeMobileTab() !== 'stats'"
-        [class.text-white]="activeMobileTab() === 'stats'" class="
-          px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
-        " [class.border-blue-500]="activeMobileTab() === 'stats'"
-        [class.border-transparent]="activeMobileTab() !== 'stats'">
-        Stats
-      </button>
-      <button (click)="setActiveMobileTab('wallet')" [class.bg-blue-600]="activeMobileTab() === 'wallet'"
-        [class.bg-slate-800]="activeMobileTab() !== 'wallet'" [class.text-gray-400]="activeMobileTab() !== 'wallet'"
-        [class.text-white]="activeMobileTab() === 'wallet'" class="
-          px-3 py-2 text-xs whitespace-nowrap border-b-2 transition-colors
-        " [class.border-blue-500]="activeMobileTab() === 'wallet'"
-        [class.border-transparent]="activeMobileTab() !== 'wallet'">
-        Wallet
-      </button>
+      <app-tab-button
+        label="Mempool"
+        [isActive]="isTabActive('mempool')"
+        (tabSelected)="setActiveMobileTab('mempool')"
+      ></app-tab-button>
+      <app-tab-button
+        label="Mining"
+        [isActive]="isTabActive('mining')"
+        (tabSelected)="setActiveMobileTab('mining')"
+      ></app-tab-button>
+      <app-tab-button
+        label="Chain"
+        [isActive]="isTabActive('blockchain')"
+        (tabSelected)="setActiveMobileTab('blockchain')"
+      ></app-tab-button>
+      <app-tab-button
+        label="Stats"
+        [isActive]="isTabActive('stats')"
+        (tabSelected)="setActiveMobileTab('stats')"
+      ></app-tab-button>
+      <app-tab-button
+        label="Wallet"
+        [isActive]="isTabActive('wallet')"
+        (tabSelected)="setActiveMobileTab('wallet')"
+      ></app-tab-button>
     </div>
 
     <div class="flex-1 overflow-hidden">
