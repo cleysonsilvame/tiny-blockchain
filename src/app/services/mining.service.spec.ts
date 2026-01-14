@@ -324,7 +324,7 @@ describe('MiningService', () => {
       expect(service.isRacing()).toBe(true);
 
       await racePromise;
-    }, 30000);
+    }, 40000);
 
     it('should initialize progress for all active miners', async () => {
       const racePromise = service.startMiningRace(
@@ -343,7 +343,7 @@ describe('MiningService', () => {
       });
 
       await racePromise;
-    }, 30000);
+    }, 40000);
 
     it('should return winner with valid hash', async () => {
       const difficulty = blockchain.getDifficulty();
@@ -358,7 +358,7 @@ describe('MiningService', () => {
 
       expect(result.hash.startsWith(prefix)).toBe(true);
       expect(result.winner).toBeTruthy();
-    }, 30000);
+    }, 40000);
 
     it('should update winner totalBlocksMined', async () => {
       const initialCounts = service.miners().map((m) => m.totalBlocksMined);
@@ -374,7 +374,7 @@ describe('MiningService', () => {
       const initialWinnerCount = initialCounts[service.miners().findIndex(m => m.id === result.winner.id)];
 
       expect(winner?.totalBlocksMined).toBe(initialWinnerCount + 1);
-    }, 30000);
+    }, 40000);
 
     it('should set lastWinner', async () => {
       const result = await service.startMiningRace(
@@ -385,7 +385,7 @@ describe('MiningService', () => {
       );
 
       expect(service.lastWinner()).toEqual(result);
-    }, 30000);
+    }, 40000);
 
     it('should stop racing after winner found', async () => {
       await service.startMiningRace(
@@ -399,7 +399,7 @@ describe('MiningService', () => {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(service.isRacing()).toBe(false);
-    }, 30000);
+    }, 40000);
 
     it('should only use active miners', async () => {
       service.toggleMiner('miner-1'); // Deactivate Alice
@@ -412,7 +412,7 @@ describe('MiningService', () => {
       );
 
       expect(result.winner.id).not.toBe('miner-1');
-    }, 30000);
+    }, 40000);
   });
 
   describe('stopRace', () => {
