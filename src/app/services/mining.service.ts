@@ -9,13 +9,20 @@ import { Blockchain } from './blockchain';
 export class MiningService {
   private blockchain = inject(Blockchain);
 
-  // Predefined miners with different mining speeds and colors
+  private readonly RANDOM_NONCE_MAX = 1000000;
+  private readonly RACE_BATCH_DIVISOR = 100;
+  private readonly RACE_BATCH_DELAY_MS = 50;
+  private readonly SINGLE_BATCH_SIZE = 10000;
+  private readonly SINGLE_BATCH_DELAY_MS = 10;
+  private readonly RESULT_DISPLAY_DELAY_MS = 500;
+  private readonly STATE_RESET_DELAY_MS = 100;
+
   private readonly defaultMiners: Miner[] = [
     {
       id: 'miner-1',
       address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
       name: 'Alice',
-      color: '#3b82f6', // blue
+      color: '#3b82f6',
       hashRate: 15000,
       totalBlocksMined: 0,
       isActive: true,
@@ -24,7 +31,7 @@ export class MiningService {
       id: 'miner-2',
       address: '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2',
       name: 'Bob',
-      color: '#10b981', // green
+      color: '#10b981',
       hashRate: 12000,
       totalBlocksMined: 0,
       isActive: true,
@@ -33,7 +40,7 @@ export class MiningService {
       id: 'miner-3',
       address: '1dice8EMZmqKvrGE4Qc9bUFf9PX3xaYDp',
       name: 'Charlie',
-      color: '#f59e0b', // orange
+      color: '#f59e0b',
       hashRate: 10000,
       totalBlocksMined: 0,
       isActive: true,
@@ -47,43 +54,34 @@ export class MiningService {
   lastWinner = signal<MiningResult | null>(null);
   miningMode = signal<'single' | 'race'>('single');
 
-  // Single mining state (shared across all component instances)
   isMining = signal<boolean>(false);
   nonce = signal<number>(0);
   data = signal<string>('');
-  isValid = signal<boolean>(false);
   selectedTransactions = signal<Transaction[]>([]);
 
-  // Computed hash that updates reactively based on blockchain state
   currentHash = computed(() => {
     const blockNumber = this.blockchain.currentBlockNumber();
     const previousHash = this.blockchain.previousHash();
     const difficulty = this.blockchain.getDifficulty();
     const nonce = this.nonce();
     const data = this.data();
-
     const txs = this.blockchain.mempool().slice(0, difficulty);
 
-    const hash = this.blockchain.calculateHash(
+    return this.blockchain.calculateHash(
       blockNumber,
       nonce,
       data,
       previousHash,
       txs,
     );
-
-    return hash;
   });
 
-  // Computed validity based on current hash and difficulty
   isValidHash = computed(() => {
     const difficulty = this.blockchain.getDifficulty();
     return this.currentHash().startsWith('0'.repeat(difficulty));
   });
 
   private stopMining = false;
-
-  // No constructor needed; using inject() for DI
 
   toggleMiner(minerId: string): void {
     this.miners.update((miners) =>
@@ -107,31 +105,19 @@ export class MiningService {
     this.stopMining = false;
     const activeMiners = this.activeMiners();
 
-    // Initialize progress for all miners
-    const progress = new Map<string, MiningProgress>();
-    activeMiners.forEach((miner) => {
-      progress.set(miner.id, {
-        minerId: miner.id,
-        nonce: 0,
-        currentHash: '',
-        attempts: 0,
-      });
-    });
-    this.miningProgress.set(progress);
+    this.initializeMinerProgress(activeMiners);
 
     return new Promise<MiningResult>((resolve) => {
       const targetPrefix = '0'.repeat(difficulty);
       let winner: MiningResult | null = null;
 
       const mineForMiner = async (miner: Miner) => {
-        let nonce = Math.floor(Math.random() * 1000000); // Random starting nonce
+        let nonce = this.generateRandomNonce();
         let attempts = 0;
+        const batchSize = this.calculateRaceBatchSize(miner.hashRate);
 
         const mineBatch = () => {
-          if (this.stopMining || winner) return;
-
-          // Reduced batch size for racing mode to make it slower and more visual
-          const batchSize = Math.floor(miner.hashRate / 100); // Much smaller batches
+          if (this.shouldStopMining(winner)) return;
 
           for (let i = 0; i < batchSize && !winner; i++) {
             const hash = this.blockchain.calculateHash(
@@ -143,53 +129,26 @@ export class MiningService {
             );
             attempts++;
 
-            // Update progress more frequently for better visual feedback
-            const currentProgress = this.miningProgress();
-            const minerProgress = currentProgress.get(miner.id);
-            if (minerProgress) {
-              minerProgress.nonce = nonce;
-              minerProgress.currentHash = hash;
-              minerProgress.attempts = attempts;
-              this.miningProgress.set(new Map(currentProgress));
-            }
+            this.updateMinerProgress(miner.id, nonce, hash, attempts);
 
-            if (hash.startsWith(targetPrefix)) {
-              winner = {
-                winner: miner,
-                nonce,
-                hash,
-                attempts,
-                timestamp: Date.now(),
-              };
-
-              // Update miner stats
-              this.miners.update((miners) =>
-                miners.map((m) =>
-                  m.id === miner.id ? { ...m, totalBlocksMined: m.totalBlocksMined + 1 } : m,
-                ),
-              );
-
-              this.lastWinner.set(winner);
-              this.stopMining = true;
-              this.isRacing.set(false);
-
+            if (this.isValidMiningHash(hash, targetPrefix)) {
+              winner = this.createMiningResult(miner, nonce, hash, attempts);
+              this.handleRaceWinner(winner);
               resolve(winner);
-              setTimeout(() => this.resetMiningState(), 500);
               return;
             }
 
             nonce++;
           }
 
-          if (!winner && !this.stopMining) {
-            setTimeout(mineBatch, 50);
+          if (!this.shouldStopMining(winner)) {
+            setTimeout(mineBatch, this.RACE_BATCH_DELAY_MS);
           }
         };
 
         mineBatch();
       };
 
-      // Start all miners racing
       activeMiners.forEach((miner) => mineForMiner(miner));
     });
   }
@@ -228,16 +187,13 @@ export class MiningService {
     this.isMining.set(true);
     this.selectedTransactions.set(transactions);
 
-    let currentNonce = 0;
-    let hash = '';
     const targetPrefix = '0'.repeat(difficulty);
+    let currentNonce = 0;
 
     return new Promise<MiningResult>((resolve) => {
       const mineInBatches = () => {
-        const batchSize = 10000;
-
-        for (let i = 0; i < batchSize; i++) {
-          hash = this.blockchain.calculateHash(
+        for (let i = 0; i < this.SINGLE_BATCH_SIZE; i++) {
+          const hash = this.blockchain.calculateHash(
             blockNumber,
             currentNonce,
             data,
@@ -245,35 +201,104 @@ export class MiningService {
             transactions,
           );
 
-          // Update shared state for UI
           this.nonce.set(currentNonce);
-          // currentHash and isValidHash are computed reactively
 
-          if (hash.startsWith(targetPrefix)) {
+          if (this.isValidMiningHash(hash, targetPrefix)) {
             const defaultMiner = this.miners()[0];
-            const result: MiningResult = {
-              winner: defaultMiner,
-              nonce: currentNonce,
-              hash,
-              attempts: currentNonce,
-              timestamp: Date.now(),
-            };
-
-            // Add delay before resolving to show final result
-            setTimeout(() => {
-              resolve(result);
-              // Reset after resolving so component can still access selectedTransactions
-              setTimeout(() => this.resetMiningState(), 100);
-            }, 500);
+            const result = this.createMiningResult(defaultMiner, currentNonce, hash, currentNonce);
+            this.handleSingleMiningResult(result, resolve);
             return;
           }
           currentNonce++;
         }
 
-        setTimeout(mineInBatches, 10);
+        setTimeout(mineInBatches, this.SINGLE_BATCH_DELAY_MS);
       };
 
       mineInBatches();
     });
+  }
+
+  private initializeMinerProgress(miners: Miner[]): void {
+    const progress = new Map<string, MiningProgress>();
+    miners.forEach((miner) => {
+      progress.set(miner.id, {
+        minerId: miner.id,
+        nonce: 0,
+        currentHash: '',
+        attempts: 0,
+      });
+    });
+    this.miningProgress.set(progress);
+  }
+
+  private generateRandomNonce(): number {
+    return Math.floor(Math.random() * this.RANDOM_NONCE_MAX);
+  }
+
+  private calculateRaceBatchSize(hashRate: number): number {
+    return Math.floor(hashRate / this.RACE_BATCH_DIVISOR);
+  }
+
+  private shouldStopMining(winner: MiningResult | null): boolean {
+    return this.stopMining || winner !== null;
+  }
+
+  private updateMinerProgress(
+    minerId: string,
+    nonce: number,
+    hash: string,
+    attempts: number,
+  ): void {
+    const currentProgress = this.miningProgress();
+    const minerProgress = currentProgress.get(minerId);
+    if (minerProgress) {
+      minerProgress.nonce = nonce;
+      minerProgress.currentHash = hash;
+      minerProgress.attempts = attempts;
+      this.miningProgress.set(new Map(currentProgress));
+    }
+  }
+
+  private isValidMiningHash(hash: string, targetPrefix: string): boolean {
+    return hash.startsWith(targetPrefix);
+  }
+
+  private createMiningResult(
+    miner: Miner,
+    nonce: number,
+    hash: string,
+    attempts: number,
+  ): MiningResult {
+    return {
+      winner: miner,
+      nonce,
+      hash,
+      attempts,
+      timestamp: Date.now(),
+    };
+  }
+
+  private handleRaceWinner(winner: MiningResult): void {
+    this.miners.update((miners) =>
+      miners.map((m) =>
+        m.id === winner.winner.id ? { ...m, totalBlocksMined: m.totalBlocksMined + 1 } : m,
+      ),
+    );
+
+    this.lastWinner.set(winner);
+    this.stopMining = true;
+    this.isRacing.set(false);
+    setTimeout(() => this.resetMiningState(), this.RESULT_DISPLAY_DELAY_MS);
+  }
+
+  private handleSingleMiningResult(
+    result: MiningResult,
+    resolve: (value: MiningResult) => void,
+  ): void {
+    setTimeout(() => {
+      resolve(result);
+      setTimeout(() => this.resetMiningState(), this.STATE_RESET_DELAY_MS);
+    }, this.RESULT_DISPLAY_DELAY_MS);
   }
 }
