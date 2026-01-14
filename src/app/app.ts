@@ -1,5 +1,5 @@
 import { Component, computed, signal, HostListener, inject, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgComponentOutlet } from '@angular/common';
 import { MempoolSidebar } from './components/mempool-sidebar/mempool-sidebar';
 import { MiningBlock } from './components/mining-block/mining-block';
 import { BlockchainDisplay } from './components/blockchain-display/blockchain-display';
@@ -8,11 +8,13 @@ import { StatsDashboard } from './components/stats-dashboard/stats-dashboard';
 import { HeaderComponent } from './components/header/header';
 import { ResizableSplit } from './components/ui/resizable-split/resizable-split';
 import { Blockchain } from './services/blockchain';
+import { BlockchainTab, MempoolTab, MiningTab, StatsTab, WalletTab } from './tabs';
 
 @Component({
   selector: 'app-root',
   imports: [
     CommonModule,
+    NgComponentOutlet,
     MempoolSidebar,
     MiningBlock,
     BlockchainDisplay,
@@ -40,6 +42,19 @@ export class App {
 
   // Mobile tab state
   activeMobileTab = signal<'mempool' | 'mining' | 'blockchain' | 'stats' | 'wallet'>('mining');
+
+  readonly tabComponents = {
+    mempool: MempoolTab,
+    mining: MiningTab,
+    blockchain: BlockchainTab,
+    stats: StatsTab,
+    wallet: WalletTab,
+  } as const;
+
+  // Computed component for the active tab
+  activeTabComponent = computed(() => {
+    return this.tabComponents[this.activeMobileTab()];
+  });
 
   constructor() {
     // Track window resize and update viewport width

@@ -18,9 +18,7 @@
           <div slot="start" class="
             border-b border-slate-800 h-full overflow-auto
           ">
-            <app-mining-block class="h-full" [blockNumber]="currentBlockNumber()" [previousHash]="previousHash()"
-              [difficulty]="difficulty" [pendingTransactions]="mempool()"
-              [minerAddress]="blockchainService.getDefaultMinerAddress()" />
+            <app-mining-block class="h-full" />
           </div>
 
           <div slot="end" class="overflow-auto min-h-0 h-full">
@@ -91,31 +89,7 @@
     </div>
 
     <div class="flex-1 overflow-hidden">
-      @if (activeMobileTab() === 'mempool') {
-      <app-mempool-sidebar class="w-full h-full overflow-auto"></app-mempool-sidebar>
-      }
-      @if (activeMobileTab() === 'mining') {
-      <div class="w-full h-full overflow-auto">
-        <app-mining-block [blockNumber]="currentBlockNumber()" [previousHash]="previousHash()" [difficulty]="difficulty"
-          [pendingTransactions]="mempool()" [minerAddress]="blockchainService.getDefaultMinerAddress()">
-        </app-mining-block>
-      </div>
-      }
-      @if (activeMobileTab() === 'blockchain') {
-      <div class="w-full h-full overflow-auto">
-        <app-blockchain-display></app-blockchain-display>
-      </div>
-      }
-      @if (activeMobileTab() === 'stats') {
-      <div class="w-full h-full overflow-auto">
-        <app-stats-dashboard></app-stats-dashboard>
-      </div>
-      }
-      @if (activeMobileTab() === 'wallet') {
-      <div class="w-full h-full overflow-auto">
-        <app-wallet-explorer></app-wallet-explorer>
-      </div>
-      }
+      <ng-container [ngComponentOutlet]="activeTabComponent()"></ng-container>
     </div>
   </div>
 </div>

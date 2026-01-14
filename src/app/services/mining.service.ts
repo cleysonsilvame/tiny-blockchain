@@ -1,6 +1,6 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
-import { Miner, MiningProgress, MiningResult } from '../models/miner.model';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { Transaction } from '../models/blockchain.model';
+import { Miner, MiningProgress, MiningResult } from '../models/miner.model';
 import { Blockchain } from './blockchain';
 
 @Injectable({
@@ -45,6 +45,41 @@ export class MiningService {
   miningProgress = signal<Map<string, MiningProgress>>(new Map());
   isRacing = signal<boolean>(false);
   lastWinner = signal<MiningResult | null>(null);
+  miningMode = signal<'single' | 'race'>('single');
+
+  // Single mining state (shared across all component instances)
+  isMining = signal<boolean>(false);
+  nonce = signal<number>(0);
+  data = signal<string>('');
+  isValid = signal<boolean>(false);
+  selectedTransactions = signal<Transaction[]>([]);
+
+  // Computed hash that updates reactively based on blockchain state
+  currentHash = computed(() => {
+    const blockNumber = this.blockchain.currentBlockNumber();
+    const previousHash = this.blockchain.previousHash();
+    const difficulty = this.blockchain.getDifficulty();
+    const nonce = this.nonce();
+    const data = this.data();
+
+    const txs = this.blockchain.mempool().slice(0, difficulty);
+
+    const hash = this.blockchain.calculateHash(
+      blockNumber,
+      nonce,
+      data,
+      previousHash,
+      txs,
+    );
+
+    return hash;
+  });
+
+  // Computed validity based on current hash and difficulty
+  isValidHash = computed(() => {
+    const difficulty = this.blockchain.getDifficulty();
+    return this.currentHash().startsWith('0'.repeat(difficulty));
+  });
 
   private stopMining = false;
 
@@ -137,7 +172,9 @@ export class MiningService {
               this.lastWinner.set(winner);
               this.stopMining = true;
               this.isRacing.set(false);
+
               resolve(winner);
+              setTimeout(() => this.resetMiningState(), 500);
               return;
             }
 
@@ -145,7 +182,6 @@ export class MiningService {
           }
 
           if (!winner && !this.stopMining) {
-            // Add delay between batches for better visualization (50ms)
             setTimeout(mineBatch, 50);
           }
         };
@@ -169,5 +205,75 @@ export class MiningService {
 
   getMinerProgress(minerId: string): MiningProgress | undefined {
     return this.miningProgress().get(minerId);
+  }
+
+  toggleMiningMode(): void {
+    this.miningMode.update((mode) => (mode === 'single' ? 'race' : 'single'));
+  }
+
+  resetMiningState(): void {
+    this.selectedTransactions.set([]);
+    this.data.set('');
+    this.nonce.set(0);
+    this.isMining.set(false);
+  }
+
+  async mineSingle(
+    blockNumber: number,
+    previousHash: string,
+    difficulty: number,
+    transactions: Transaction[],
+    data: string,
+  ): Promise<MiningResult> {
+    this.isMining.set(true);
+    this.selectedTransactions.set(transactions);
+
+    let currentNonce = 0;
+    let hash = '';
+    const targetPrefix = '0'.repeat(difficulty);
+
+    return new Promise<MiningResult>((resolve) => {
+      const mineInBatches = () => {
+        const batchSize = 10000;
+
+        for (let i = 0; i < batchSize; i++) {
+          hash = this.blockchain.calculateHash(
+            blockNumber,
+            currentNonce,
+            data,
+            previousHash,
+            transactions,
+          );
+
+          // Update shared state for UI
+          this.nonce.set(currentNonce);
+          // currentHash and isValidHash are computed reactively
+
+          if (hash.startsWith(targetPrefix)) {
+            const defaultMiner = this.miners()[0];
+            const result: MiningResult = {
+              winner: defaultMiner,
+              nonce: currentNonce,
+              hash,
+              attempts: currentNonce,
+              timestamp: Date.now(),
+            };
+
+            // Add delay before resolving to show final result
+            setTimeout(() => {
+              resolve(result);
+              // Reset after resolving so component can still access selectedTransactions
+              setTimeout(() => this.resetMiningState(), 100);
+            }, 500);
+            return;
+          }
+          currentNonce++;
+        }
+
+        setTimeout(mineInBatches, 10);
+      };
+
+      mineInBatches();
+    });
   }
 }

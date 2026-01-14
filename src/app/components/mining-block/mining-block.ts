@@ -1,9 +1,9 @@
-import { Component, Input, signal, OnInit, OnChanges, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Block, Transaction } from '../../models/blockchain.model';
+import { Block } from '../../models/blockchain.model';
 import { Blockchain } from '../../services/blockchain';
-import { MiningService } from '../../services/mining.service';
 import { ForkService } from '../../services/fork.service';
+import { MiningService } from '../../services/mining.service';
 import { MiningRace } from '../mining-race/mining-race';
 
 @Component({
@@ -13,72 +13,48 @@ import { MiningRace } from '../mining-race/mining-race';
   styleUrl: './mining-block.css',
   standalone: true,
 })
-export class MiningBlock implements OnInit, OnChanges {
+export class MiningBlock {
   private blockchainService = inject(Blockchain);
   private miningService = inject(MiningService);
   private forkService = inject(ForkService);
 
-  @Input() blockNumber!: number;
-  @Input() previousHash!: string;
-  @Input() difficulty!: number;
-  @Input() pendingTransactions: Transaction[] = [];
-  @Input() minerAddress = '';
-
-  nonce = signal<number>(0);
-  data = signal<string>('');
-  isMining = signal<boolean>(false);
-  selectedTransactions = signal<Transaction[]>([]);
-  currentHash = signal<string>('');
-  isValid = signal<boolean>(false);
-  miningMode = signal<'single' | 'race'>('single'); // New: mining mode toggle
-  selectedForkId = signal<string>('main'); // Selected fork to mine on
+  selectedForkId = signal<string>('main');
   showRewardTooltip = signal<boolean>(false);
 
+  get isMining() { return this.miningService.isMining(); }
+  get miningMode() { return this.miningService.miningMode(); }
+  get isValid() { return this.miningService.isValidHash(); }
+  get nonce() { return this.miningService.nonce(); }
+  get data() { return this.miningService.data(); }
+  get currentHash() { return this.miningService.currentHash(); }
+  get isRacing() { return this.miningService.isRacing(); }
+  get blockNumber() { return this.blockchainService.currentBlockNumber(); }
+  get previousHash() { return this.blockchainService.previousHash(); }
+  get difficulty() { return this.blockchainService.getDifficulty(); }
+  get pendingTransactions() { return this.blockchainService.mempool(); }
+  get minerAddress() { return this.blockchainService.getDefaultMinerAddress(); }
+  get availableForks() { return this.forkService.forks(); }
+  get blockReward() {
+    return this.blockchainService.calculateBlockReward(this.miningService.selectedTransactions());
+  }
+
   totalFees = computed(() =>
-    this.blockchainService.calculateTotalFees(this.selectedTransactions()),
+    this.blockchainService.calculateTotalFees(this.miningService.selectedTransactions()),
   );
   totalReward = computed(() =>
-    this.blockchainService.calculateBlockReward(this.selectedTransactions()),
+    this.blockchainService.calculateBlockReward(this.miningService.selectedTransactions()),
   );
-  blockReward = computed(() => this.blockchainService.getBlockReward());
-  isRacing = computed(() => this.miningService.isRacing());
-  availableForks = computed(() => this.forkService.forks());
-
-  // No constructor needed; using inject() for DI
-
-  ngOnInit(): void {
-    this.updateHash();
-  }
-
-  ngOnChanges(): void {
-    this.updateHash();
-  }
-
-  updateHash(): void {
-    const txs = this.selectedTransactions();
-    const hash = this.blockchainService.calculateHash(
-      this.blockNumber,
-      this.nonce(),
-      this.data(),
-      this.previousHash,
-      txs,
-    );
-    this.currentHash.set(hash);
-    this.isValid.set(hash.startsWith('0'.repeat(this.difficulty)));
-  }
 
   onNonceChange(value: string): void {
-    this.nonce.set(parseInt(value) || 0);
-    this.updateHash();
+    this.miningService.nonce.set(parseInt(value) || 0);
   }
 
   onDataChange(value: string): void {
-    this.data.set(value);
-    this.updateHash();
+    this.miningService.data.set(value);
   }
 
   async mine(): Promise<void> {
-    if (this.miningMode() === 'race') {
+    if (this.miningMode === 'race') {
       await this.mineWithRace();
     } else {
       await this.mineSingle();
@@ -86,130 +62,73 @@ export class MiningBlock implements OnInit, OnChanges {
   }
 
   async mineSingle(): Promise<void> {
-    this.isMining.set(true);
-    const txsToInclude = this.pendingTransactions.slice(0, 4);
-    this.selectedTransactions.set(txsToInclude);
+    const txsToInclude = this.blockchainService.mempool().slice(0, 4);
 
-    let currentNonce = 0;
-    let hash = '';
-    const targetPrefix = '0'.repeat(this.difficulty);
+    try {
+      const result = await this.miningService.mineSingle(
+        this.blockchainService.currentBlockNumber(),
+        this.blockchainService.previousHash(),
+        this.blockchainService.getDifficulty(),
+        txsToInclude,
+        this.data,
+      );
 
-    await new Promise<void>((resolve) => {
-      const mineInBatches = () => {
-        const batchSize = 10000;
-
-        for (let i = 0; i < batchSize; i++) {
-          hash = this.blockchainService.calculateHash(
-            this.blockNumber,
-            currentNonce,
-            this.data(),
-            this.previousHash,
-            txsToInclude,
-          );
-
-          if (hash.startsWith(targetPrefix)) {
-            this.nonce.set(currentNonce);
-            this.currentHash.set(hash);
-            this.isValid.set(true);
-
-            setTimeout(() => {
-              this.isMining.set(false);
-              const block: Block = {
-                number: this.blockNumber,
-                nonce: currentNonce,
-                data: this.data(),
-                previousHash: this.previousHash,
-                hash: hash,
-                transactions: txsToInclude,
-                minerAddress: this.minerAddress || this.blockchainService.getDefaultMinerAddress(),
-                reward: this.blockchainService.calculateBlockReward(txsToInclude),
-                timestamp: Date.now(),
-              };
-
-              // Add to selected fork or main chain
-              if (this.selectedForkId() === 'main') {
-                this.blockchainService.addBlockToChain(block);
-              } else {
-                this.forkService.addBlockToFork(this.selectedForkId(), block);
-              }
-
-              // Signal which fork received the new block
-              this.forkService.miningForkId.set(this.selectedForkId());
-
-              this.selectedTransactions.set([]);
-              this.data.set('');
-              this.nonce.set(0);
-              resolve();
-            }, 300);
-            return;
-          }
-          currentNonce++;
-        }
-
-        this.nonce.set(currentNonce);
-        this.updateHash();
-        setTimeout(mineInBatches, 10);
-      };
-
-      mineInBatches();
-    });
+      // Create and add block after mining completes
+      const block = this.createBlock(result, this.blockchainService.getDefaultMinerAddress());
+      this.addBlockToChain(block);
+    } catch (error) {
+      console.error('Mining error:', error);
+      this.miningService.isMining.set(false);
+    }
   }
 
   async mineWithRace(): Promise<void> {
-    this.isMining.set(true);
-    const txsToInclude = this.pendingTransactions.slice(0, 4);
-    this.selectedTransactions.set(txsToInclude);
+    const txsToInclude = this.blockchainService.mempool().slice(0, 4);
+    this.miningService.selectedTransactions.set(txsToInclude);
 
     try {
       const result = await this.miningService.startMiningRace(
-        this.blockNumber,
-        this.previousHash,
-        this.difficulty,
+        this.blockchainService.currentBlockNumber(),
+        this.blockchainService.previousHash(),
+        this.blockchainService.getDifficulty(),
         txsToInclude,
       );
 
-      // Winner found!
-      this.nonce.set(result.nonce);
-      this.currentHash.set(result.hash);
-      this.isValid.set(true);
-
-      setTimeout(() => {
-        this.isMining.set(false);
-        const block: Block = {
-          number: this.blockNumber,
-          nonce: result.nonce,
-          data: this.data(),
-          previousHash: this.previousHash,
-          hash: result.hash,
-          transactions: txsToInclude,
-          minerAddress: result.winner.address,
-          reward: this.blockchainService.calculateBlockReward(txsToInclude),
-          timestamp: result.timestamp,
-        };
-
-        // Add to selected fork or main chain
-        if (this.selectedForkId() === 'main') {
-          this.blockchainService.addBlockToChain(block);
-        } else {
-          this.forkService.addBlockToFork(this.selectedForkId(), block);
-        }
-
-        // Signal which fork received the new block
-        this.forkService.miningForkId.set(this.selectedForkId());
-
-        this.selectedTransactions.set([]);
-        this.data.set('');
-        this.nonce.set(0);
-      }, 500);
+      // Create and add block after mining completes
+      const block = this.createBlock(result, result.winner.address);
+      this.addBlockToChain(block);
     } catch (error) {
       console.error('Mining race error:', error);
-      this.isMining.set(false);
+      this.miningService.isMining.set(false);
     }
   }
 
   toggleMiningMode(): void {
-    if (!this.isMining()) {
-      this.miningMode.update((mode) => (mode === 'single' ? 'race' : 'single'));
+    if (!this.isMining) {
+      this.miningService.toggleMiningMode();
     }
+  }
+
+  private createBlock(result: { nonce: number; hash: string; timestamp: number }, minerAddress: string): Block {
+    return {
+      number: this.blockNumber,
+      nonce: result.nonce,
+      data: this.data,
+      previousHash: this.previousHash,
+      hash: result.hash,
+      transactions: this.miningService.selectedTransactions(),
+      minerAddress,
+      reward: this.blockchainService.calculateBlockReward(this.miningService.selectedTransactions()),
+      timestamp: result.timestamp,
+    };
+  }
+
+  private addBlockToChain(block: Block): void {
+    if (this.selectedForkId() === 'main') {
+      this.blockchainService.addBlockToChain(block);
+    } else {
+      this.forkService.addBlockToFork(this.selectedForkId(), block);
+    }
+    this.forkService.miningForkId.set(this.selectedForkId());
   }
 }
