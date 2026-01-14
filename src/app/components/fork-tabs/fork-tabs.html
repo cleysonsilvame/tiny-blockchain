@@ -3,15 +3,18 @@
     @for (fork of forks(); track fork.id) {
       <button
         (click)="selectFork(fork.id)"
+        [disabled]="isDisabled()"
         [class.active]="activeForkId() === fork.id"
         class="
           flex items-center gap-2 px-2 py-1 rounded-lg whitespace-nowrap
           transition-all text-white
+          disabled:cursor-not-allowed
         "
         [style.border]="'2px solid ' + fork.color"
         [class.bg-slate-700]="activeForkId() === fork.id"
         [class.bg-slate-800]="activeForkId() !== fork.id"
         [class.opacity-70]="activeForkId() !== fork.id"
+        [class.opacity-50]="isDisabled()"
       >
         <!-- Fork color indicator dot -->
         <div class="w-3 h-3 rounded-full" [style.backgroundColor]="fork.color"></div>

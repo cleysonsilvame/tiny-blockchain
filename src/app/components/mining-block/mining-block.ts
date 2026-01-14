@@ -18,7 +18,6 @@ export class MiningBlock {
   private miningService = inject(MiningService);
   private forkService = inject(ForkService);
 
-  selectedForkId = signal<string>('main');
   showRewardTooltip = signal<boolean>(false);
 
   get isMining() { return this.miningService.isMining(); }
@@ -28,12 +27,16 @@ export class MiningBlock {
   get data() { return this.miningService.data(); }
   get currentHash() { return this.miningService.currentHash(); }
   get isRacing() { return this.miningService.isRacing(); }
-  get blockNumber() { return this.blockchainService.currentBlockNumber(); }
+  blockNumber = computed(() => {
+    const activeForkId = this.forkService.activeForkId();
+    const forks = this.forkService.forks();
+    const activeFork = forks.find(f => f.id === activeForkId);
+    return activeFork ? activeFork.chain.length : 0;
+  });
   get previousHash() { return this.blockchainService.previousHash(); }
   get difficulty() { return this.blockchainService.getDifficulty(); }
   get pendingTransactions() { return this.blockchainService.mempool(); }
   get minerAddress() { return this.blockchainService.getDefaultMinerAddress(); }
-  get availableForks() { return this.forkService.forks(); }
   get blockReward() {
     return this.blockchainService.calculateBlockReward(this.miningService.selectedTransactions());
   }
@@ -111,7 +114,7 @@ export class MiningBlock {
 
   private createBlock(result: { nonce: number; hash: string; timestamp: number }, minerAddress: string): Block {
     return {
-      number: this.blockNumber,
+      number: this.blockNumber(),
       nonce: result.nonce,
       data: this.data,
       previousHash: this.previousHash,
@@ -124,11 +127,11 @@ export class MiningBlock {
   }
 
   private addBlockToChain(block: Block): void {
-    if (this.selectedForkId() === 'main') {
+    const targetForkId = this.forkService.activeForkId();
+    if (targetForkId === 'main') {
       this.blockchainService.addBlockToChain(block);
-    } else {
-      this.forkService.addBlockToFork(this.selectedForkId(), block);
+    } else if (targetForkId) {
+      this.forkService.addBlockToFork(targetForkId, block);
     }
-    this.forkService.miningForkId.set(this.selectedForkId());
   }
 }

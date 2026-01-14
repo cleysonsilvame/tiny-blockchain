@@ -6,13 +6,12 @@ import { Blockchain } from './blockchain';
 @Injectable({
   providedIn: 'root',
 })
-export class ForkService {
+export class ForkService { // TODO: transformar o main chain em uma lista de chains?
   private blockchain = inject(Blockchain);
 
   forks = signal<BlockchainFork[]>([]);
   activeForkId = signal<string | null>(null);
   showForkView = signal<boolean>(false);
-  miningForkId = signal<string | null>(null);
 
   constructor() {
     // Initialize with main chain as default fork

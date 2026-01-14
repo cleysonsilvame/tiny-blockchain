@@ -1,7 +1,8 @@
-import { Component, signal, effect, computed, inject } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 
 import { ForkService } from '../../services/fork.service';
 import { Blockchain } from '../../services/blockchain';
+import { MiningService } from '../../services/mining.service';
 
 @Component({
   selector: 'app-fork-tabs',
@@ -13,25 +14,13 @@ import { Blockchain } from '../../services/blockchain';
 export class ForkTabs {
   forkService = inject(ForkService);
   private blockchain = inject(Blockchain);
+  private miningService = inject(MiningService);
 
   forks = () => this.forkService.forks();
   activeForkId = () => this.forkService.activeForkId();
   blockchainData = computed(() => this.blockchain.blockchain());
   showTooltip = signal<boolean>(false);
-
-  constructor() {
-    // Auto-switch to mining fork when mining completes
-    effect(() => {
-      const miningForkId = this.forkService.miningForkId();
-      if (miningForkId) {
-        this.forkService.activeForkId.set(miningForkId);
-        // Reset miningForkId after switching
-        setTimeout(() => {
-          this.forkService.miningForkId.set(null);
-        }, 100);
-      }
-    });
-  }
+  isDisabled = computed(() => this.miningService.isMining() || this.miningService.isRacing());
 
   selectFork(forkId: string): void {
     this.forkService.activeForkId.set(forkId);
