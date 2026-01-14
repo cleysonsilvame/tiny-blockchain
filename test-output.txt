@@ -1,0 +1,57 @@
+
+> tiny-blockchain@0.0.0 test
+> ng test
+
+[33m❯[39m Building...
+[32m✔[39m Building...
+[1mInitial chunk files[22m                                         [2m | [22m[1mNames[22m                                                    [2m | [22m [1mRaw size[22m
+[32mspec-app-components-mining-block-mining-block.js[39m            [2m | [22m[2mspec-app-components-mining-block-mining-block[22m            [2m | [22m [36m55.48 kB[39m[2m | [22m
+[32mspec-app-components-mempool-sidebar-mempool-sidebar.js[39m      [2m | [22m[2mspec-app-components-mempool-sidebar-mempool-sidebar[22m      [2m | [22m [36m48.39 kB[39m[2m | [22m
+[32mstyles.css[39m                                                  [2m | [22m[2mstyles[22m                                                   [2m | [22m [36m42.58 kB[39m[2m | [22m
+[32mspec-app-components-blockchain-display-blockchain-display.js[39m[2m | [22m[2mspec-app-components-blockchain-display-blockchain-display[22m[2m | [22m [36m41.97 kB[39m[2m | [22m
+[32mspec-app-services-blockchain.js[39m                             [2m | [22m[2mspec-app-services-blockchain[22m                             [2m | [22m [36m24.73 kB[39m[2m | [22m
+[32mspec-app-components-wallet-explorer-wallet-explorer.js[39m      [2m | [22m[2mspec-app-components-wallet-explorer-wallet-explorer[22m      [2m | [22m [36m23.93 kB[39m[2m | [22m
+[32mspec-app-services-fork.service.js[39m                           [2m | [22m[2mspec-app-services-fork.service[22m                           [2m | [22m [36m19.99 kB[39m[2m | [22m
+[32mspec-app-services-mining.service.js[39m                         [2m | [22m[2mspec-app-services-mining.service[22m                         [2m | [22m [36m13.12 kB[39m[2m | [22m
+[32mchunk-NWGLES55.js[39m                                           [2m | [22m[2m-[22m                                                        [2m | [22m  [36m9.49 kB[39m[2m | [22m
+[32mchunk-FVXF6RNV.js[39m                                           [2m | [22m[2m-[22m                                                        [2m | [22m  [36m8.30 kB[39m[2m | [22m
+[32mchunk-4DQJOAPQ.js[39m                                           [2m | [22m[2m-[22m                                                        [2m | [22m  [36m5.09 kB[39m[2m | [22m
+[32mchunk-P4F7534S.js[39m                                           [2m | [22m[2m-[22m                                                        [2m | [22m  [36m4.93 kB[39m[2m | [22m
+[32mchunk-A44TLS2P.js[39m                                           [2m | [22m[2m-[22m                                                        [2m | [22m  [36m4.74 kB[39m[2m | [22m
+[32minit-testbed.js[39m                                             [2m | [22m[2minit-testbed[22m                                             [2m | [22m  [36m1.20 kB[39m[2m | [22m
+[32mspec-app-components-transaction-card-transaction-card.js[39m    [2m | [22m[2mspec-app-components-transaction-card-transaction-card[22m    [2m | [22m[36m695 bytes[39m[2m | [22m
+
+[1m [22m                                                           [2m | [22m[1mInitial total[22m                                            [2m | [22m[1m304.64 kB[22m
+
+Application bundle generation complete. [3.031 seconds] - 2026-01-14T05:44:17.591Z
+
+
+[1m[46m RUN [49m[22m [36mv4.0.16 [39m[90m/home/runner/work/tiny-blockchain/tiny-blockchain[39m
+
+ [32m✓[39m [30m[43m tiny-blockchain [49m[39m src/app/services/fork.service.spec.ts [2m([22m[2m36 tests[22m[2m)[22m[32m 168[2mms[22m[39m
+ [32m✓[39m [30m[43m tiny-blockchain [49m[39m src/app/components/blockchain-display/blockchain-display.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 79[2mms[22m[39m
+ [32m✓[39m [30m[43m tiny-blockchain [49m[39m src/app/components/transaction-card/transaction-card.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m [30m[43m tiny-blockchain [49m[39m src/app/components/mempool-sidebar/mempool-sidebar.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 58[2mms[22m[39m
+ [32m✓[39m [30m[43m tiny-blockchain [49m[39m src/app/components/wallet-explorer/wallet-explorer.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m [30m[43m tiny-blockchain [49m[39m src/app/components/mining-block/mining-block.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m [30m[43m tiny-blockchain [49m[39m src/app/services/blockchain.spec.ts [2m([22m[2m52 tests[22m[2m)[22m[33m 3618[2mms[22m[39m
+       [33m[2m✓[22m[39m should validate correct blockchain [33m 658[2mms[22m[39m
+       [33m[2m✓[22m[39m should detect tampered block [33m 1920[2mms[22m[39m
+       [33m[2m✓[22m[39m should verify previousHash chain [33m 877[2mms[22m[39m
+ [32m✓[39m [30m[43m tiny-blockchain [49m[39m src/app/services/mining.service.spec.ts [2m([22m[2m49 tests[22m[2m)[22m[33m 42563[2mms[22m[39m
+       [33m[2m✓[22m[39m should validate hash starts with difficulty prefix [33m 738[2mms[22m[39m
+       [33m[2m✓[22m[39m should set isMining flag [33m 746[2mms[22m[39m
+       [33m[2m✓[22m[39m should find valid hash with required prefix [33m 757[2mms[22m[39m
+       [33m[2m✓[22m[39m should return mining result with nonce and hash [33m 749[2mms[22m[39m
+       [33m[2m✓[22m[39m should set isRacing flag [33m 7992[2mms[22m[39m
+       [33m[2m✓[22m[39m should initialize progress for all active miners [33m 1461[2mms[22m[39m
+       [33m[2m✓[22m[39m should return winner with valid hash [33m 12293[2mms[22m[39m
+       [33m[2m✓[22m[39m should update winner totalBlocksMined [33m 4078[2mms[22m[39m
+       [33m[2m✓[22m[39m should set lastWinner [33m 2145[2mms[22m[39m
+       [33m[2m✓[22m[39m should only use active miners [33m 11104[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m8 passed[39m[22m[90m (8)[39m
+[2m      Tests [22m [1m[32m142 passed[39m[22m[90m (142)[39m
+[2m   Start at [22m 05:44:17
+[2m   Duration [22m 43.98s[2m (transform 513ms, setup 1.06s, import 790ms, tests 46.54s, environment 5.45s)[22m
+
