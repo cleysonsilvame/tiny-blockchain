@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 
-import { Blockchain } from '../../services/blockchain';
+import { Blockchain } from '../../services/blockchain.service';
 import { MiningService } from '../../services/mining.service';
 
 interface MinerStats {
@@ -22,7 +22,10 @@ export class StatsDashboard {
   private blockchain = inject(Blockchain);
   private miningService = inject(MiningService);
 
-  blocks = computed(() => this.blockchain.blockchain());
+  blocks = computed(() => {
+    const activeChain = this.blockchain.activeChain();
+    return activeChain ? activeChain.chain : [];
+  });
   miners = computed(() => this.miningService.miners());
 
   // Total de blocos na cadeia

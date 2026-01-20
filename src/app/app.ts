@@ -11,7 +11,7 @@ import { StatsDashboard } from './components/stats-dashboard/stats-dashboard';
 import { HeaderComponent } from './components/header/header';
 import { ResizableSplit } from './components/ui/resizable-split/resizable-split';
 import { TabButton } from './components/ui/tab-button';
-import { Blockchain } from './services/blockchain';
+import { Blockchain } from './services/blockchain.service';
 import { BlockchainTab, MempoolTab, MiningTab, StatsTab, WalletTab } from './tabs';
 
 type TabId = 'mempool' | 'mining' | 'blockchain' | 'stats' | 'wallet';

@@ -2,8 +2,7 @@ import { Component, Input, signal, computed, inject } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Block } from '../../models/blockchain.model';
-import { Blockchain } from '../../services/blockchain';
-import { ForkService } from '../../services/fork.service';
+import { Blockchain } from '../../services/blockchain.service';
 import { ForkTabs } from '../fork-tabs/fork-tabs';
 
 @Component({
@@ -14,7 +13,6 @@ import { ForkTabs } from '../fork-tabs/fork-tabs';
 })
 export class BlockchainDisplay {
   blockchainService = inject(Blockchain);
-  private forkService = inject(ForkService);
 
   @Input() blocks: Block[] = [];
 
@@ -23,15 +21,9 @@ export class BlockchainDisplay {
   validationResult = signal<{ isValid: boolean; invalidBlocks: number[] } | null>(null);
   showValidation = signal<boolean>(false);
 
-  // Computed blocks from active fork
   displayBlocks = computed(() => {
-    const activeForkId = this.forkService.activeForkId();
-    const forks = this.forkService.forks();
-
-    if (!activeForkId) return [];
-
-    const activeFork = forks.find((f) => f.id === activeForkId);
-    return activeFork ? activeFork.chain : [];
+    const activeChain = this.blockchainService.activeChain();
+    return activeChain?.chain || [];
   });
 
   // No constructor needed; using inject() for DI

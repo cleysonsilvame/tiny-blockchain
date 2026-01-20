@@ -1,13 +1,15 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Transaction } from '../models/blockchain.model';
 import { Miner, MiningProgress, MiningResult } from '../models/miner.model';
-import { Blockchain } from './blockchain';
+import { Blockchain } from './blockchain.service';
+import { MempoolService } from './mempool.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MiningService {
   private blockchain = inject(Blockchain);
+  private mempoolService = inject(MempoolService);
 
   private readonly RANDOM_NONCE_MAX = 1000000;
   private readonly RACE_BATCH_DIVISOR = 100;
@@ -65,7 +67,7 @@ export class MiningService {
     const difficulty = this.blockchain.getDifficulty();
     const nonce = this.nonce();
     const data = this.data();
-    const txs = this.blockchain.mempool().slice(0, difficulty);
+    const txs = this.mempoolService.getPrioritizedTransactions(difficulty);
 
     return this.blockchain.calculateHash(
       blockNumber,

@@ -1,7 +1,6 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 
-import { ForkService } from '../../services/fork.service';
-import { Blockchain } from '../../services/blockchain';
+import { Blockchain } from '../../services/blockchain.service';
 
 @Component({
   selector: 'app-fork-visualizer',
@@ -10,27 +9,25 @@ import { Blockchain } from '../../services/blockchain';
   styleUrl: './fork-visualizer.css',
 })
 export class ForkVisualizer {
-  forkService = inject(ForkService);
-  private blockchain = inject(Blockchain);
+  blockchain = inject(Blockchain);
 
-  forks = computed(() => this.forkService.forks());
-  showForkView = computed(() => this.forkService.showForkView());
-  blockchainData = computed(() => this.blockchain.blockchain());
-
-  // No constructor needed; using inject() for DI
+  chains = computed(() => this.blockchain.chains());
+  showForkView = signal<boolean>(false);
+  mainChainData = computed(() => this.blockchain.mainChain());
 
   createFork(): void {
-    const chain = this.blockchainData();
-    if (chain.length === 0) {
+    const mainChain = this.mainChainData();
+    if (!mainChain || mainChain.chain.length === 0) {
       alert('Mine alguns blocos primeiro!');
       return;
     }
 
-    const forkPoint = Math.max(0, chain.length - 1);
-    const forkName = `Fork ${this.forks().length}`;
+    const forkPoint = Math.max(0, mainChain.chain.length - 1);
+    const forkName = `Fork ${this.chains().length}`;
 
     try {
-      this.forkService.createFork(forkPoint, forkName);
+      const newChainId = this.blockchain.createChain(forkPoint, forkName);
+      this.blockchain.setActiveChain(newChainId);
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Erro ao criar o fork';
       alert(msg);
@@ -38,11 +35,15 @@ export class ForkVisualizer {
   }
 
   toggleForkView(): void {
-    this.forkService.toggleForkView();
+    this.showForkView.update(v => !v);
   }
 
-  getChainLength(forkId: string): number {
-    const fork = this.forkService.getFork(forkId);
-    return fork ? fork.chain.length : 0;
+  removeChain(chainId: string): void {
+    this.blockchain.removeChain(chainId);
+  }
+
+  getChainLength(chainId: string): number {
+    const chain = this.blockchain.getChain(chainId);
+    return chain ? chain.chain.length : 0;
   }
 }

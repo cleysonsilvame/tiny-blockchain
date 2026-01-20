@@ -27,19 +27,19 @@
   @if (showForkView()) {
     <div class="space-y-3">
       <!-- Fork List -->
-      @for (fork of forks(); track fork.id) {
+      @for (chain of chains(); track chain.id) {
         <div
           class="bg-slate-800 rounded p-3 border transition-all"
-          [style.borderColor]="fork.color"
-          [class.border-2]="fork.isMainChain"
+          [style.borderColor]="chain.color"
+          [class.border-2]="chain.isMainChain"
         >
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-              <div class="w-3 h-3 rounded-full" [style.backgroundColor]="fork.color"></div>
-              <span class="text-sm font-semibold" [style.color]="fork.color">
-                {{ fork.name }}
+              <div class="w-3 h-3 rounded-full" [style.backgroundColor]="chain.color"></div>
+              <span class="text-sm font-semibold" [style.color]="chain.color">
+                {{ chain.name }}
               </span>
-              @if (fork.isMainChain) {
+              @if (chain.isMainChain) {
                 <span class="
                   px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded
                 ">
@@ -48,9 +48,9 @@
               }
             </div>
 
-            @if (!fork.isMainChain && fork.id !== 'main') {
+            @if (!chain.isMainChain && chain.id !== 'main') {
               <button
-                (click)="forkService.removeFork(fork.id)"
+                (click)="removeChain(chain.id)"
                 class="
                   text-red-400
                   hover:text-red-300
@@ -64,11 +64,11 @@
 
           <div class="text-xs text-slate-400 space-y-1">
             <div>
-              Blocos: <span class="text-white font-semibold">{{ fork.chain.length }}</span>
+              Blocos: <span class="text-white font-semibold">{{ chain.chain.length }}</span>
             </div>
-            @if (fork.forkPoint > 0) {
+            @if (chain.forkPoint > 0) {
               <div>
-                Fork no bloco: <span class="text-white">#{{ fork.forkPoint }}</span>
+                Fork no bloco: <span class="text-white">#{{ chain.forkPoint }}</span>
               </div>
             }
           </div>
@@ -76,19 +76,21 @@
       }
 
       <!-- Create Fork Button -->
-      <button
-        (click)="createFork()"
-        [disabled]="blockchainData().length === 0"
-        class="
-          w-full py-2 bg-purple-600
-          hover:bg-purple-700
-          disabled:bg-slate-700
-          text-white text-sm rounded transition-all
-          disabled:cursor-not-allowed
-        "
-      >
-        <span>+ Criar Fork Manual</span>
-      </button>
+      @if (mainChainData()) {
+        <button
+          (click)="createFork()"
+          [disabled]="mainChainData()!.chain.length === 0"
+          class="
+            w-full py-2 bg-purple-600
+            hover:bg-purple-700
+            disabled:bg-slate-700
+            text-white text-sm rounded transition-all
+            disabled:cursor-not-allowed
+          "
+        >
+          <span>+ Criar Fork Manual</span>
+        </button>
+      }
 
       <!-- Info -->
       <div class="text-xs text-slate-400 bg-slate-800 rounded p-2">

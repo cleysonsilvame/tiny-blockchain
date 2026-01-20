@@ -1,7 +1,7 @@
-import { Component, signal, effect, computed, inject } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 
-import { ForkService } from '../../services/fork.service';
-import { Blockchain } from '../../services/blockchain';
+import { Blockchain } from '../../services/blockchain.service';
+import { MiningService } from '../../services/mining.service';
 
 @Component({
   selector: 'app-fork-tabs',
@@ -11,57 +11,39 @@ import { Blockchain } from '../../services/blockchain';
   styleUrl: './fork-tabs.css',
 })
 export class ForkTabs {
-  forkService = inject(ForkService);
   private blockchain = inject(Blockchain);
+  private miningService = inject(MiningService);
 
-  forks = () => this.forkService.forks();
-  activeForkId = () => this.forkService.activeForkId();
-  blockchainData = computed(() => this.blockchain.blockchain());
+  chains = () => this.blockchain.chains();
+  activeChainId = () => this.blockchain.activeChainId();
+  mainChainData = computed(() => this.blockchain.mainChain());
   showTooltip = signal<boolean>(false);
+  isDisabled = computed(() => this.miningService.isMining() || this.miningService.isRacing());
 
-  constructor() {
-    // Auto-switch to mining fork when mining completes
-    effect(() => {
-      const miningForkId = this.forkService.miningForkId();
-      if (miningForkId) {
-        this.forkService.activeForkId.set(miningForkId);
-        // Reset miningForkId after switching
-        setTimeout(() => {
-          this.forkService.miningForkId.set(null);
-        }, 100);
-      }
-    });
+  selectFork(chainId: string): void {
+    this.blockchain.setActiveChain(chainId);
   }
 
-  selectFork(forkId: string): void {
-    this.forkService.activeForkId.set(forkId);
-  }
-
-  deleteFork(forkId: string, event: Event): void {
+  deleteFork(chainId: string, event: Event): void {
     event.stopPropagation();
-    if (forkId !== 'main') {
-      this.forkService.removeFork(forkId);
-      // Switch to main chain if deleted fork was active
-      if (this.forkService.activeForkId() === forkId) {
-        this.forkService.activeForkId.set('main');
-      }
+    if (chainId !== 'main') {
+      this.blockchain.removeChain(chainId);
     }
   }
 
   createFork(): void {
-    const chain = this.blockchainData();
-    if (chain.length === 0) {
+    const mainChain = this.mainChainData();
+    if (!mainChain || mainChain.chain.length === 0) {
       alert('Mine alguns blocos primeiro!');
       return;
     }
 
-    const forkPoint = Math.max(0, chain.length - 1);
-    const forkName = `Fork ${this.forks().length}`;
+    const forkPoint = Math.max(0, mainChain.chain.length - 1);
+    const forkName = `Fork ${this.chains().length}`;
 
     try {
-      const newForkId = this.forkService.createFork(forkPoint, forkName);
-      // Auto-switch to new fork
-      this.forkService.activeForkId.set(newForkId);
+      const newChainId = this.blockchain.createChain(forkPoint, forkName);
+      this.blockchain.setActiveChain(newChainId);
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Erro ao criar o fork';
       alert(msg);

@@ -11,7 +11,9 @@ import {
 import { FormsModule } from '@angular/forms';
 import { TransactionCard } from '../transaction-card/transaction-card';
 import { Transaction } from '../../models/blockchain.model';
-import { Blockchain } from '../../services/blockchain';
+import { Blockchain } from '../../services/blockchain.service';
+import { MempoolService } from '../../services/mempool.service';
+import { WalletService } from '../../services/wallet.service';
 import { Popover, PopoverTrigger, PopoverContent } from '../ui/popover';
 
 @Component({
@@ -22,6 +24,8 @@ import { Popover, PopoverTrigger, PopoverContent } from '../ui/popover';
 })
 export class MempoolSidebar implements OnDestroy {
   blockchainService = inject(Blockchain);
+  mempoolService = inject(MempoolService);
+  walletService = inject(WalletService);
 
   @ViewChild('newTxPopover') newTxPopover?: Popover;
   @ViewChild('autoPopover') autoPopover?: Popover;
@@ -36,8 +40,8 @@ export class MempoolSidebar implements OnDestroy {
   private autoGenerateTimer?: number;
   private txCounter = 1;
 
-  transactions = computed(() => this.blockchainService.mempool());
-  isPrioritized = computed(() => this.blockchainService.prioritizeMempoolByFee());
+  transactions = computed(() => this.mempoolService.mempool());
+  isPrioritized = computed(() => this.mempoolService.prioritizeMempoolByFee());
   sortedTransactions = computed(() => {
     const txs = this.transactions();
     return this.isPrioritized() ? [...txs].sort((a, b) => b.fee - a.fee) : txs;
@@ -57,49 +61,22 @@ export class MempoolSidebar implements OnDestroy {
   }
 
   generateRandomAddress(): string {
-    const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-    const prefixes = ['1', '3', 'bc1q'];
-    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-    let address = prefix;
-    const length = prefix === 'bc1q' ? 38 : 30;
-    for (let i = prefix.length; i < length; i++) {
-      address += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return address;
+    return this.mempoolService.generateRandomAddress();
   }
 
-  // Seleciona um remetente realista (com saldo positivo) ou aleatório
   selectSender(): string {
     if (this.generationMode() === 'realistic') {
-      const activeWallets = this.blockchainService.getActiveWallets();
-
-      // Se não houver carteiras ativas, usa aleatório
-      if (activeWallets.length === 0) {
-        return this.generateRandomAddress();
-      }
-
-      // 80% chance de usar carteira ativa, 20% chance de novo endereço
-      if (Math.random() < 0.8) {
-        const wallet = activeWallets[Math.floor(Math.random() * activeWallets.length)];
-        return wallet.address;
-      }
+      const activeWallets = this.walletService.getActiveWallets();
+      return this.mempoolService.selectRealisticSender(activeWallets);
     }
-
     return this.generateRandomAddress();
   }
 
-  // Seleciona um destinatário (prefere carteiras diferentes do sender)
   selectReceiver(sender: string): string {
     if (this.generationMode() === 'realistic') {
-      const allAddresses = this.blockchainService.getAllAddresses();
-      const otherAddresses = allAddresses.filter((addr) => addr !== sender);
-
-      // Se há outros endereços na blockchain, prefere um deles
-      if (otherAddresses.length > 0 && Math.random() < 0.6) {
-        return otherAddresses[Math.floor(Math.random() * otherAddresses.length)];
-      }
+      const allAddresses = this.walletService.getAllAddresses();
+      return this.mempoolService.selectRealisticReceiver(sender, allAddresses);
     }
-
     return this.generateRandomAddress();
   }
 
@@ -125,7 +102,12 @@ export class MempoolSidebar implements OnDestroy {
       fee: parseFloat(this.fee() || '0'),
     };
 
-    this.blockchainService.addTransaction(newTx);
+    if (!this.mempoolService.canMakeTransaction(newTx, (addr) => this.walletService.getBalance(addr))) {
+      alert('Insufficient balance!');
+      return;
+    }
+
+    this.mempoolService.addTransaction(newTx);
     this.txCounter++;
     this.sender.set('');
     this.receiver.set('');
@@ -146,27 +128,17 @@ export class MempoolSidebar implements OnDestroy {
 
   startAutoGeneration(): void {
     this.autoGenerateTimer = setInterval(() => {
-      const sender = this.selectSender();
-      const receiver = this.selectReceiver(sender);
-      const amount = parseFloat((Math.random() * 5).toFixed(3));
-      const fee = parseFloat((Math.random() * 0.001).toFixed(6));
+      const tx = this.generationMode() === 'realistic'
+        ? this.mempoolService.generateRealisticTransaction(
+            this.walletService.getActiveWallets(),
+            this.walletService.getAllAddresses(),
+            (addr) => this.walletService.getBalance(addr),
+          )
+        : this.mempoolService.generateRandomTransaction();
 
-      const newTx: Transaction = {
-        id: `auto-${Date.now()}-${Math.random()}`,
-        sender,
-        receiver,
-        amount,
-        fee,
-      };
-
-      // Em modo realista, valida se o sender tem fundos
-      if (this.generationMode() === 'realistic') {
-        if (!this.blockchainService.canMakeTransaction(newTx)) {
-          return; // Ignora transação se não tiver fundos
-        }
+      if (tx) {
+        this.mempoolService.addTransaction(tx);
       }
-
-      this.blockchainService.addTransaction(newTx);
     }, this.autoGenerateInterval());
   }
 
