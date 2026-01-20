@@ -17,3 +17,12 @@ export interface Block {
   reward: number; // Recompensa total (base + taxas)
   timestamp: number; // Timestamp do bloco
 }
+
+export interface Chain {
+  id: string;
+  name: string;
+  chain: Block[];
+  color: string;
+  isMainChain: boolean;
+  forkPoint: number;
+}

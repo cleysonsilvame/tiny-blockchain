@@ -1,8 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Block } from '../../models/blockchain.model';
-import { Blockchain } from '../../services/blockchain';
-import { ForkService } from '../../services/fork.service';
+import { Blockchain } from '../../services/blockchain.service';
+import { MempoolService } from '../../services/mempool.service';
 import { MiningService } from '../../services/mining.service';
 import { MiningRace } from '../mining-race/mining-race';
 
@@ -15,8 +15,8 @@ import { MiningRace } from '../mining-race/mining-race';
 })
 export class MiningBlock {
   private blockchainService = inject(Blockchain);
+  private mempoolService = inject(MempoolService);
   private miningService = inject(MiningService);
-  private forkService = inject(ForkService);
 
   showRewardTooltip = signal<boolean>(false);
 
@@ -27,15 +27,10 @@ export class MiningBlock {
   get data() { return this.miningService.data(); }
   get currentHash() { return this.miningService.currentHash(); }
   get isRacing() { return this.miningService.isRacing(); }
-  blockNumber = computed(() => {
-    const activeForkId = this.forkService.activeForkId();
-    const forks = this.forkService.forks();
-    const activeFork = forks.find(f => f.id === activeForkId);
-    return activeFork ? activeFork.chain.length : 0;
-  });
+  blockNumber = computed(() => this.blockchainService.currentBlockNumber());
   get previousHash() { return this.blockchainService.previousHash(); }
   get difficulty() { return this.blockchainService.getDifficulty(); }
-  get pendingTransactions() { return this.blockchainService.mempool(); }
+  get pendingTransactions() { return this.mempoolService.mempool(); }
   get minerAddress() { return this.blockchainService.getDefaultMinerAddress(); }
   get blockReward() {
     return this.blockchainService.calculateBlockReward(this.miningService.selectedTransactions());
@@ -65,7 +60,7 @@ export class MiningBlock {
   }
 
   async mineSingle(): Promise<void> {
-    const txsToInclude = this.blockchainService.mempool().slice(0, 4);
+    const txsToInclude = this.mempoolService.getPrioritizedTransactions(4);
 
     try {
       const result = await this.miningService.mineSingle(
@@ -86,7 +81,7 @@ export class MiningBlock {
   }
 
   async mineWithRace(): Promise<void> {
-    const txsToInclude = this.blockchainService.mempool().slice(0, 4);
+    const txsToInclude = this.mempoolService.getPrioritizedTransactions(4);
     this.miningService.selectedTransactions.set(txsToInclude);
 
     try {
@@ -127,11 +122,6 @@ export class MiningBlock {
   }
 
   private addBlockToChain(block: Block): void {
-    const targetForkId = this.forkService.activeForkId();
-    if (targetForkId === 'main') {
-      this.blockchainService.addBlockToChain(block);
-    } else if (targetForkId) {
-      this.forkService.addBlockToFork(targetForkId, block);
-    }
+    this.blockchainService.addBlockToChain(block);
   }
 }
