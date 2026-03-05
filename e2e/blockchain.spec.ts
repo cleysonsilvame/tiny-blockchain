@@ -83,11 +83,14 @@ test.describe('E2E: Complete Blockchain Application Flow', () => {
     // ========================================
     console.log('Phase 3: Mining block in solo mode...');
     
-    // Look for mining mode toggle or ensure solo mode is active
-    const soloModeButton = page.locator('button:has-text("Solo"), button:has-text("Single"), [data-mode="solo"]').first();
-    if (await soloModeButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await soloModeButton.click();
-      await page.waitForTimeout(300);
+    const miningModeToggleButton = page.locator('button:has-text("Solo"), button:has-text("Single"), button:has-text("Competição"), button:has-text("Race"), [data-mode="solo"], [data-mode="race"]').first();
+    if (await miningModeToggleButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      const miningModeLabel = (await miningModeToggleButton.textContent()) || '';
+      const isRaceModeActive = miningModeLabel.includes('Competição') || miningModeLabel.includes('Race');
+      if (isRaceModeActive) {
+        await miningModeToggleButton.click();
+        await page.waitForTimeout(300);
+      }
     }
     
     // Update block data if needed (nonce, data fields)
@@ -111,6 +114,12 @@ test.describe('E2E: Complete Blockchain Application Flow', () => {
     console.log(`Blocks in chain: ${blockCount}`);
     expect(blockCount).toBeGreaterThanOrEqual(1);
 
+    const validateBlockchainButton = blockchainSection.locator('button:has-text("Validar Blockchain")');
+    await expect(validateBlockchainButton).toBeVisible();
+    await validateBlockchainButton.click();
+    await expect(blockchainSection.getByText('Block #1', { exact: true })).toBeVisible();
+    await expect(blockchainSection.getByText('✗ Invalid')).toHaveCount(0);
+
     // ========================================
     // PHASE 4: Verify Mempool Cleanup
     // ========================================
@@ -126,9 +135,13 @@ test.describe('E2E: Complete Blockchain Application Flow', () => {
     console.log('Phase 5: Mining block in competitive race mode...');
     
     // Switch to race mode
-    const raceModeButton = page.locator('button:has-text("Race"), button:has-text("Competitive"), [data-mode="race"]').first();
+    const raceModeButton = page.locator('button:has-text("Solo"), button:has-text("Competição"), button:has-text("Race"), button:has-text("Competitive"), [data-mode="race"], [data-mode="solo"]').first();
     if (await raceModeButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await raceModeButton.click();
+      const raceModeLabel = (await raceModeButton.textContent()) || '';
+      const isSingleModeActive = raceModeLabel.includes('Solo') || raceModeLabel.includes('Single');
+      if (isSingleModeActive) {
+        await raceModeButton.click();
+      }
       await page.waitForTimeout(500);
       
       // Click mine button for race
