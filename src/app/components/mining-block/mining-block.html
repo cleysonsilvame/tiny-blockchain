@@ -36,7 +36,7 @@
       font-semibold text-white truncate
     ">Block #{{ blockNumber() }}</h2>
 
-    @if (isValid) {
+    @if (miningService.isValidHash()) {
       <div
         class="
           ml-auto px-2
@@ -68,7 +68,7 @@
         ">Modo de Mineração</div>
         <button
           (click)="toggleMiningMode()"
-          [disabled]="isMining || isRacing"
+          [disabled]="miningService.isMining() || miningService.isRacing()"
           class="
             px-3
             sm:px-4
@@ -79,7 +79,7 @@
             transition-all whitespace-nowrap
           "
           [class]="
-            miningMode === 'single'
+            miningService.miningMode() === 'single'
               ? '
                 bg-blue-600 text-white
                 hover:bg-blue-700
@@ -89,14 +89,14 @@
                 hover:bg-purple-700
               '
           "
-          [class.opacity-50]="isMining || isRacing"
-          [class.cursor-not-allowed]="isMining || isRacing"
+          [class.opacity-50]="miningService.isMining() || miningService.isRacing()"
+          [class.cursor-not-allowed]="miningService.isMining() || miningService.isRacing()"
         >
-          {{ miningMode === 'single' ? '👤 Solo' : '🏁 Competição' }}
+          {{ miningService.miningMode() === 'single' ? '👤 Solo' : '🏁 Competição' }}
         </button>
       </div>
       <p class="text-xs text-slate-400">
-        @if (miningMode === 'single') {
+        @if (miningService.miningMode() === 'single') {
           Você minera sozinho com controle manual
         } @else {
           Múltiplos mineradores competem pelo bloco
@@ -105,7 +105,7 @@
     </div>
 
     <!-- Mining Race Panel (only in race mode)  TODO: ajustar padding-->
-    @if (miningMode === 'race') {
+    @if (miningService.miningMode() === 'race') {
       <app-mining-race></app-mining-race>
     }
 
@@ -120,7 +120,7 @@
           <input
             id="nonce"
             type="number"
-            [value]="nonce"
+            [value]="miningService.nonce()"
             (input)="onNonceChange($any($event.target).value)"
             class="
               w-full bg-slate-700 border border-slate-600 text-white font-mono
@@ -133,7 +133,7 @@
           <label for="data" class="block text-slate-300 mb-2 text-sm">Data</label>
           <textarea
             id="data"
-            [value]="data"
+            [value]="miningService.data()"
             (input)="onDataChange($any($event.target).value)"
             class="
               w-full bg-slate-700 border border-slate-600 text-white rounded-md
@@ -149,7 +149,7 @@
         <div>
           <div class="flex items-center gap-2 mb-2">
             <span class="block text-slate-300 text-sm"
-              >Transações Pendentes ({{ pendingTransactions.length }})</span
+              >Transações Pendentes ({{ mempoolService.mempool().length }})</span
             >
 
             <!-- Rewards Info Icon with Tooltip -->
@@ -192,7 +192,7 @@
                     <div class="space-y-2 text-xs">
                       <div class="flex justify-between text-slate-300">
                         <span>Recompensa Base:</span>
-                        <span class="font-mono text-white">{{ blockReward.toFixed(4) }} BTC</span>
+                        <span class="font-mono text-white">{{ blockchainService.getBlockReward().toFixed(4) }} BTC</span>
                       </div>
                       <div class="flex justify-between text-slate-300">
                         <span>Taxas das Transações:</span>
@@ -219,7 +219,7 @@
               }
             </div>
           </div>
-          @if (pendingTransactions.length === 0) {
+          @if (mempoolService.mempool().length === 0) {
             <div
               class="
                 bg-slate-700 border border-slate-600 rounded-lg p-4
@@ -232,7 +232,7 @@
             <div class="
               bg-slate-700 border border-slate-600 rounded-lg p-3 space-y-2
             ">
-              @for (tx of pendingTransactions.slice(0, 4); track tx.id) {
+              @for (tx of mempoolService.mempool().slice(0, 4); track tx.id) {
                 <div class="bg-slate-800 rounded p-2 text-xs">
                   <div class="text-blue-300 font-mono truncate">
                     {{ tx.sender.slice(0, 12) }}...
@@ -256,7 +256,7 @@
         <input
           id="prevHash"
           type="text"
-          [value]="previousHash"
+          [value]="blockchainService.previousHash()"
           disabled
           class="
             w-full bg-slate-700 border border-slate-600 text-slate-400 font-mono
@@ -270,24 +270,24 @@
         <input
           id="currentHash"
           type="text"
-          [value]="currentHash"
+          [value]="miningService.currentHash()"
           disabled
-          [class.bg-emerald-950]="isValid"
-          [class.border-emerald-500]="isValid"
-          [class.text-emerald-300]="isValid"
-          [class.bg-red-950]="!isValid"
-          [class.border-red-500]="!isValid"
-          [class.text-red-300]="!isValid"
+          [class.bg-emerald-950]="miningService.isValidHash()"
+          [class.border-emerald-500]="miningService.isValidHash()"
+          [class.text-emerald-300]="miningService.isValidHash()"
+          [class.bg-red-950]="!miningService.isValidHash()"
+          [class.border-red-500]="!miningService.isValidHash()"
+          [class.text-red-300]="!miningService.isValidHash()"
           class="w-full border-2 font-mono text-sm rounded-md px-3 py-2"
         />
         <div class="mt-2 text-xs text-slate-400">
-          Difficulty: Hash must start with {{ difficulty }} zero{{ difficulty !== 1 ? 's' : '' }}
+          Difficulty: Hash must start with {{ blockchainService.getDifficulty() }} zero{{ blockchainService.getDifficulty() !== 1 ? 's' : '' }}
         </div>
       </div>
 
       <button
         (click)="mine()"
-        [disabled]="isMining || isRacing"
+        [disabled]="miningService.isMining() || miningService.isRacing()"
         class="
           md:col-span-2
           w-full bg-gradient-to-r from-blue-600 to-purple-600
@@ -297,7 +297,7 @@
           items-center justify-center gap-2
         "
       >
-        @if (!isMining && !isRacing) {
+        @if (!miningService.isMining() && !miningService.isRacing()) {
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
           </svg>
@@ -307,10 +307,10 @@
             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
           </svg>
         }
-        @if (miningMode === 'single') {
-          {{ isMining ? 'Mining...' : 'MINE BLOCK' }}
+        @if (miningService.miningMode() === 'single') {
+          {{ miningService.isMining() ? 'Mining...' : 'MINE BLOCK' }}
         } @else {
-          {{ isRacing ? 'Racing...' : 'START MINING RACE' }}
+          {{ miningService.isRacing() ? 'Racing...' : 'START MINING RACE' }}
         }
       </button>
     </div>

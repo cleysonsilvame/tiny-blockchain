@@ -130,6 +130,55 @@ export class Blockchain {
     return this.BLOCK_REWARD + this.calculateTotalFees(transactions);
   }
 
+  createBlock(
+    blockNumber: number,
+    nonce: number,
+    hash: string,
+    previousHash: string,
+    data: string,
+    transactions: Transaction[],
+    minerAddress: string,
+    timestamp: number,
+  ): Block {
+    return {
+      number: blockNumber,
+      nonce,
+      data,
+      previousHash,
+      hash,
+      transactions,
+      minerAddress,
+      reward: this.calculateBlockReward(transactions),
+      timestamp,
+    };
+  }
+
+  mineAndAddBlock(
+    nonce: number,
+    hash: string,
+    data: string,
+    transactions: Transaction[],
+    minerAddress: string,
+    timestamp: number,
+    chainId?: string,
+  ): void {
+    const blockNumber = this.currentBlockNumber();
+    const previousHash = this.previousHash();
+
+    const block = this.createBlock(
+      blockNumber,
+      nonce,
+      hash,
+      previousHash,
+      data,
+      transactions,
+      minerAddress,
+      timestamp,
+    );
+
+    this.addBlockToChain(block, chainId);
+  }
+
   // Valida uma chain específica
   validateChain(chainId?: string): { isValid: boolean; invalidBlocks: number[] } {
     const targetChainId = chainId || this.activeChainId();

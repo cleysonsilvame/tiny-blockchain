@@ -1,6 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Block } from '../../models/blockchain.model';
 import { Blockchain } from '../../services/blockchain.service';
 import { MempoolService } from '../../services/mempool.service';
 import { MiningService } from '../../services/mining.service';
@@ -14,28 +13,13 @@ import { MiningRace } from '../mining-race/mining-race';
   standalone: true,
 })
 export class MiningBlock {
-  private blockchainService = inject(Blockchain);
-  private mempoolService = inject(MempoolService);
-  private miningService = inject(MiningService);
+  blockchainService = inject(Blockchain);
+  mempoolService = inject(MempoolService);
+  miningService = inject(MiningService);
 
   showRewardTooltip = signal<boolean>(false);
 
-  get isMining() { return this.miningService.isMining(); }
-  get miningMode() { return this.miningService.miningMode(); }
-  get isValid() { return this.miningService.isValidHash(); }
-  get nonce() { return this.miningService.nonce(); }
-  get data() { return this.miningService.data(); }
-  get currentHash() { return this.miningService.currentHash(); }
-  get isRacing() { return this.miningService.isRacing(); }
   blockNumber = computed(() => this.blockchainService.currentBlockNumber());
-  get previousHash() { return this.blockchainService.previousHash(); }
-  get difficulty() { return this.blockchainService.getDifficulty(); }
-  get pendingTransactions() { return this.mempoolService.mempool(); }
-  get minerAddress() { return this.blockchainService.getDefaultMinerAddress(); }
-  get blockReward() {
-    return this.blockchainService.calculateBlockReward(this.miningService.selectedTransactions());
-  }
-
   totalFees = computed(() =>
     this.blockchainService.calculateTotalFees(this.miningService.selectedTransactions()),
   );
@@ -52,7 +36,7 @@ export class MiningBlock {
   }
 
   async mine(): Promise<void> {
-    if (this.miningMode === 'race') {
+    if (this.miningService.miningMode() === 'race') {
       await this.mineWithRace();
     } else {
       await this.mineSingle();
@@ -68,12 +52,17 @@ export class MiningBlock {
         this.blockchainService.previousHash(),
         this.blockchainService.getDifficulty(),
         txsToInclude,
-        this.data,
+        this.miningService.data(),
       );
 
-      // Create and add block after mining completes
-      const block = this.createBlock(result, this.blockchainService.getDefaultMinerAddress());
-      this.addBlockToChain(block);
+      this.blockchainService.mineAndAddBlock(
+        result.nonce,
+        result.hash,
+        this.miningService.data(),
+        txsToInclude,
+        this.blockchainService.getDefaultMinerAddress(),
+        result.timestamp,
+      );
     } catch (error) {
       console.error('Mining error:', error);
       this.miningService.isMining.set(false);
@@ -92,9 +81,14 @@ export class MiningBlock {
         txsToInclude,
       );
 
-      // Create and add block after mining completes
-      const block = this.createBlock(result, result.winner.address);
-      this.addBlockToChain(block);
+      this.blockchainService.mineAndAddBlock(
+        result.nonce,
+        result.hash,
+        this.miningService.data(),
+        txsToInclude,
+        result.winner.address,
+        result.timestamp,
+      );
     } catch (error) {
       console.error('Mining race error:', error);
       this.miningService.isMining.set(false);
@@ -102,26 +96,8 @@ export class MiningBlock {
   }
 
   toggleMiningMode(): void {
-    if (!this.isMining) {
+    if (!this.miningService.isMining()) {
       this.miningService.toggleMiningMode();
     }
-  }
-
-  private createBlock(result: { nonce: number; hash: string; timestamp: number }, minerAddress: string): Block {
-    return {
-      number: this.blockNumber(),
-      nonce: result.nonce,
-      data: this.data,
-      previousHash: this.previousHash,
-      hash: result.hash,
-      transactions: this.miningService.selectedTransactions(),
-      minerAddress,
-      reward: this.blockchainService.calculateBlockReward(this.miningService.selectedTransactions()),
-      timestamp: result.timestamp,
-    };
-  }
-
-  private addBlockToChain(block: Block): void {
-    this.blockchainService.addBlockToChain(block);
   }
 }

@@ -1,20 +1,20 @@
 import {
   Component,
+  computed,
+  HostListener,
+  inject,
   OnDestroy,
   signal,
-  computed,
   ViewChild,
-  inject,
-  HostListener,
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { TransactionCard } from '../transaction-card/transaction-card';
 import { Transaction } from '../../models/blockchain.model';
 import { Blockchain } from '../../services/blockchain.service';
 import { MempoolService } from '../../services/mempool.service';
 import { WalletService } from '../../services/wallet.service';
-import { Popover, PopoverTrigger, PopoverContent } from '../ui/popover';
+import { TransactionCard } from '../transaction-card/transaction-card';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
 @Component({
   selector: 'app-mempool-sidebar',
@@ -61,21 +61,38 @@ export class MempoolSidebar implements OnDestroy {
   }
 
   generateRandomAddress(): string {
-    return this.mempoolService.generateRandomAddress();
+    const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    const prefixes = ['1', '3', 'bc1q'];
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    let address = prefix;
+    const length = prefix === 'bc1q' ? 38 : 30;
+    for (let i = prefix.length; i < length; i++) {
+      address += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return address;
   }
 
   selectSender(): string {
     if (this.generationMode() === 'realistic') {
-      const activeWallets = this.walletService.getActiveWallets();
-      return this.mempoolService.selectRealisticSender(activeWallets);
+      const activeWallets = this.walletService.activeWallets();
+      if (activeWallets.length === 0) {
+        return this.generateRandomAddress();
+      }
+      if (Math.random() < 0.8) {
+        const wallet = activeWallets[Math.floor(Math.random() * activeWallets.length)];
+        return wallet.address;
+      }
     }
     return this.generateRandomAddress();
   }
 
   selectReceiver(sender: string): string {
     if (this.generationMode() === 'realistic') {
-      const allAddresses = this.walletService.getAllAddresses();
-      return this.mempoolService.selectRealisticReceiver(sender, allAddresses);
+      const allAddresses = this.walletService.allAddresses();
+      const otherAddresses = allAddresses.filter((addr) => addr !== sender);
+      if (otherAddresses.length > 0 && Math.random() < 0.6) {
+        return otherAddresses[Math.floor(Math.random() * otherAddresses.length)];
+      }
     }
     return this.generateRandomAddress();
   }
@@ -129,17 +146,49 @@ export class MempoolSidebar implements OnDestroy {
   startAutoGeneration(): void {
     this.autoGenerateTimer = setInterval(() => {
       const tx = this.generationMode() === 'realistic'
-        ? this.mempoolService.generateRealisticTransaction(
-            this.walletService.getActiveWallets(),
-            this.walletService.getAllAddresses(),
-            (addr) => this.walletService.getBalance(addr),
-          )
-        : this.mempoolService.generateRandomTransaction();
+        ? this.generateRealisticTransaction()
+        : this.generateRandomTransaction();
 
       if (tx) {
         this.mempoolService.addTransaction(tx);
       }
     }, this.autoGenerateInterval());
+  }
+
+  generateRealisticTransaction(): Transaction | null {
+    const sender = this.selectSender();
+    const receiver = this.selectReceiver(sender);
+    const amount = parseFloat((Math.random() * 5).toFixed(3));
+    const fee = parseFloat((Math.random() * 0.001).toFixed(6));
+
+    const tx: Transaction = {
+      id: `auto-${Date.now()}-${Math.random()}`,
+      sender,
+      receiver,
+      amount,
+      fee,
+    };
+
+    if (!this.mempoolService.canMakeTransaction(tx, (addr) => this.walletService.getBalance(addr))) {
+      return null;
+    }
+
+    return tx;
+  }
+
+  generateRandomTransaction(): Transaction {
+    const sender = this.generateRandomAddress();
+    const receiver = this.generateRandomAddress();
+    const amount = parseFloat((Math.random() * 5).toFixed(3));
+    const fee = parseFloat((Math.random() * 0.001).toFixed(6));
+
+    return {
+      id: `auto-${Date.now()}-${Math.random()}`,
+      sender,
+      receiver,
+      amount,
+      fee,
+    };
   }
 
   stopAutoGeneration(): void {

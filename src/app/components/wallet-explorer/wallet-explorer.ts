@@ -17,7 +17,7 @@ export class WalletExplorer {
   searchAddress = signal<string>('');
   selectedAddress = signal<string | null>(null);
 
-  allAddresses = computed(() => this.walletService.getAllAddresses());
+  allAddresses = computed(() => this.walletService.allAddresses());
 
   balance = computed(() => {
     const addr = this.selectedAddress();
