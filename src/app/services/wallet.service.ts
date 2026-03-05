@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, computed } from '@angular/core';
 import { Blockchain } from './blockchain.service';
 
 export interface Wallet {
@@ -15,34 +15,62 @@ export interface TransactionHistoryEntry {
   timestamp: number;
 }
 
+type WalletBalances = Record<string, number>;
+
 @Injectable({
   providedIn: 'root',
 })
 export class WalletService {
   private blockchain = inject(Blockchain);
 
-  getBalance(address: string): number {
+  private balancesCache = computed<WalletBalances>(() => {
     const chain = this.blockchain.activeChain();
-    if (!chain) return 0;
+    if (!chain) return {};
 
-    let balance = 0;
+    const balances: WalletBalances = {};
 
     for (const block of chain.chain) {
-      if (block.minerAddress === address) {
-        balance += block.reward;
+      if (!balances[block.minerAddress]) {
+        balances[block.minerAddress] = 0;
       }
+      balances[block.minerAddress] += block.reward;
 
       for (const tx of block.transactions) {
-        if (tx.sender === address) {
-          balance -= tx.amount + tx.fee;
+        if (!balances[tx.sender]) {
+          balances[tx.sender] = 0;
         }
-        if (tx.receiver === address) {
-          balance += tx.amount;
+        if (!balances[tx.receiver]) {
+          balances[tx.receiver] = 0;
         }
+
+        balances[tx.sender] -= tx.amount + tx.fee;
+        balances[tx.receiver] += tx.amount;
       }
     }
 
-    return balance;
+    return balances;
+  });
+
+  allAddresses = computed(() => {
+    return Object.keys(this.balancesCache());
+  });
+
+  activeWallets = computed<Wallet[]>(() => {
+    const balances = this.balancesCache();
+    const wallets: Wallet[] = [];
+
+    for (const address in balances) {
+      const balance = balances[address];
+      if (balance > 0) {
+        wallets.push({ address, balance });
+      }
+    }
+
+    return wallets.sort((a, b) => b.balance - a.balance);
+  });
+
+  getBalance(address: string): number {
+    return this.balancesCache()[address] || 0;
   }
 
   getTransactionHistory(address: string): TransactionHistoryEntry[] {
@@ -87,32 +115,10 @@ export class WalletService {
   }
 
   getAllAddresses(): string[] {
-    const addresses = new Set<string>();
-    const chain = this.blockchain.activeChain();
-    if (!chain) return [];
-
-    for (const block of chain.chain) {
-      addresses.add(block.minerAddress);
-      for (const tx of block.transactions) {
-        addresses.add(tx.sender);
-        addresses.add(tx.receiver);
-      }
-    }
-
-    return Array.from(addresses);
+    return this.allAddresses();
   }
 
   getActiveWallets(): Wallet[] {
-    const addresses = this.getAllAddresses();
-    const wallets: Wallet[] = [];
-
-    for (const address of addresses) {
-      const balance = this.getBalance(address);
-      if (balance > 0) {
-        wallets.push({ address, balance });
-      }
-    }
-
-    return wallets.sort((a, b) => b.balance - a.balance);
+    return this.activeWallets();
   }
 }

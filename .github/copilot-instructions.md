@@ -21,6 +21,8 @@
 
 ## Workflows
 - Dev server: `npm start` (Angular CLI). Tests: `npm test` (Vitest via `ng test`). Build: `npm run build`.
+- E2E tests: `npm run test:e2e`.
+- In environments without graphical UI (dev container, remote, CI), run Playwright UI mode with `npm run test:e2e:ui -- --ui-host 0.0.0.0 --ui-port 9323`.
 - Use focused staging (`git add -p`) to keep commits scoped. If skipping tests, mention why in PR/notes.
 
 ## Integrations & Assets

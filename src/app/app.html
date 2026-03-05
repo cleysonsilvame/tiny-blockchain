@@ -7,7 +7,7 @@
     flex-1 min-h-0
   ">
     <app-resizable-split direction="horizontal" [initialRatio]="25" [minRatio]="15" [maxRatio]="40">
-      <app-mempool-sidebar class="h-full" slot="start" />
+      <app-mempool-sidebar class="h-full" slot="start" data-testid="mempool-sidebar" />
 
       <app-resizable-split direction="horizontal" [initialRatio]="70" [minRatio]="70" [maxRatio]="80" slot="end" class="
         h-full
@@ -18,11 +18,11 @@
           <div slot="start" class="
             border-b border-slate-800 h-full overflow-auto
           ">
-            <app-mining-block class="h-full" />
+            <app-mining-block class="h-full" data-testid="mining-block" />
           </div>
 
           <div slot="end" class="overflow-auto min-h-0 h-full">
-            <app-blockchain-display />
+            <app-blockchain-display data-testid="blockchain-display" />
           </div>
         </app-resizable-split>
 
@@ -30,8 +30,8 @@
           h-full flex flex-col overflow-y-auto bg-slate-950 border-l
           border-slate-800
         ">
-          <app-stats-dashboard />
-          <app-wallet-explorer class="flex-1" />
+          <app-stats-dashboard data-testid="stats-dashboard" />
+          <app-wallet-explorer class="flex-1" data-testid="wallet-explorer" />
         </div>
       </app-resizable-split>
     </app-resizable-split>

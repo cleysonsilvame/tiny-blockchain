@@ -1,7 +1,7 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 
-import { MiningService } from '../../services/mining.service';
 import { MiningProgress } from '../../models/miner.model';
+import { MiningService } from '../../services/mining.service';
 
 @Component({
   selector: 'app-mining-race',
@@ -12,19 +12,12 @@ import { MiningProgress } from '../../models/miner.model';
 export class MiningRace {
   miningService = inject(MiningService);
 
-  miners = computed(() => this.miningService.miners());
-  miningProgress = computed(() => this.miningService.miningProgress());
-  isRacing = computed(() => this.miningService.isRacing());
-  lastWinner = computed(() => this.miningService.lastWinner());
-
-  // No constructor needed; using inject() for DI
-
   toggleMiner(minerId: string): void {
     this.miningService.toggleMiner(minerId);
   }
 
   getMinerProgress(minerId: string): MiningProgress | undefined {
-    return this.miningProgress().get(minerId);
+    return this.miningService.miningProgress().get(minerId);
   }
 
   formatHash(hash: string): string {

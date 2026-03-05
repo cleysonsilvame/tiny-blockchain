@@ -1,11 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { Transaction } from '../models/blockchain.model';
 
-interface Wallet {
-  address: string;
-  balance: number;
-}
-
 @Injectable({
   providedIn: 'root',
 })
@@ -48,85 +43,6 @@ export class MempoolService {
 
   private sortByFee(transactions: Transaction[]): Transaction[] {
     return [...transactions].sort((a, b) => b.fee - a.fee);
-  }
-
-  // Transaction generation utilities
-  generateRandomAddress(): string {
-    const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-    const prefixes = ['1', '3', 'bc1q'];
-    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-    let address = prefix;
-    const length = prefix === 'bc1q' ? 38 : 30;
-    for (let i = prefix.length; i < length; i++) {
-      address += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return address;
-  }
-
-  selectRealisticSender(activeWallets: Wallet[]): string {
-    if (activeWallets.length === 0) {
-      return this.generateRandomAddress();
-    }
-
-    // 80% chance de usar carteira ativa, 20% novo endereço
-    if (Math.random() < 0.8) {
-      const wallet = activeWallets[Math.floor(Math.random() * activeWallets.length)];
-      return wallet.address;
-    }
-
-    return this.generateRandomAddress();
-  }
-
-  selectRealisticReceiver(excludeSender: string, allAddresses: string[]): string {
-    const otherAddresses = allAddresses.filter((addr) => addr !== excludeSender);
-
-    // Se há outros endereços, prefere um deles (60%)
-    if (otherAddresses.length > 0 && Math.random() < 0.6) {
-      return otherAddresses[Math.floor(Math.random() * otherAddresses.length)];
-    }
-
-    return this.generateRandomAddress();
-  }
-
-  generateRealisticTransaction(
-    activeWallets: Wallet[],
-    allAddresses: string[],
-    getBalance: (address: string) => number,
-  ): Transaction | null {
-    const sender = this.selectRealisticSender(activeWallets);
-    const receiver = this.selectRealisticReceiver(sender, allAddresses);
-    const amount = parseFloat((Math.random() * 5).toFixed(3));
-    const fee = parseFloat((Math.random() * 0.001).toFixed(6));
-
-    const tx: Transaction = {
-      id: `auto-${Date.now()}-${Math.random()}`,
-      sender,
-      receiver,
-      amount,
-      fee,
-    };
-
-    // Valida se sender tem fundos suficientes
-    if (!this.canMakeTransaction(tx, getBalance)) {
-      return null;
-    }
-
-    return tx;
-  }
-
-  generateRandomTransaction(): Transaction {
-    const sender = this.generateRandomAddress();
-    const receiver = this.generateRandomAddress();
-    const amount = parseFloat((Math.random() * 5).toFixed(3));
-    const fee = parseFloat((Math.random() * 0.001).toFixed(6));
-
-    return {
-      id: `auto-${Date.now()}-${Math.random()}`,
-      sender,
-      receiver,
-      amount,
-      fee,
-    };
   }
 
   initializeMockTransactions(): void {
