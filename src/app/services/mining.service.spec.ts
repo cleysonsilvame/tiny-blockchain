@@ -1,19 +1,16 @@
 import { TestBed } from '@angular/core/testing';
 import { MiningService } from './mining.service';
 import { Blockchain } from './blockchain.service';
-import { MempoolService } from './mempool.service';
 import { Transaction } from '../models/blockchain.model';
 
 describe('MiningService', () => {
   let service: MiningService;
   let blockchain: Blockchain;
-  let mempoolService: MempoolService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(MiningService);
     blockchain = TestBed.inject(Blockchain);
-    mempoolService = TestBed.inject(MempoolService);
   });
 
   it('should be created', () => {

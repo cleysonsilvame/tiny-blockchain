@@ -1,14 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MiningBlock } from './mining-block';
-import { Blockchain } from '../../services/blockchain.service';
-import { MempoolService } from '../../services/mempool.service';
 import { MiningService } from '../../services/mining.service';
 
 describe('MiningBlock Component', () => {
   let component: MiningBlock;
   let fixture: ComponentFixture<MiningBlock>;
-  let blockchain: Blockchain;
-  let mempoolService: MempoolService;
   let miningService: MiningService;
 
   beforeEach(async () => {
@@ -18,8 +14,6 @@ describe('MiningBlock Component', () => {
 
     fixture = TestBed.createComponent(MiningBlock);
     component = fixture.componentInstance;
-    blockchain = TestBed.inject(Blockchain);
-    mempoolService = TestBed.inject(MempoolService);
     miningService = TestBed.inject(MiningService);
     await fixture.whenStable();
   });

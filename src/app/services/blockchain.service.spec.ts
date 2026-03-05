@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Blockchain } from './blockchain.service';
 import { MempoolService } from './mempool.service';
-import { Block, Transaction, Chain } from '../models/blockchain.model';
+import { Block, Transaction } from '../models/blockchain.model';
 
 describe('Blockchain', () => {
   let service: Blockchain;

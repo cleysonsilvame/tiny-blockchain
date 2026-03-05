@@ -1,13 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { WalletExplorer } from './wallet-explorer';
 import { Blockchain } from '../../services/blockchain.service';
-import { WalletService } from '../../services/wallet.service';
 
 describe('WalletExplorer Component', () => {
   let component: WalletExplorer;
   let fixture: ComponentFixture<WalletExplorer>;
   let blockchain: Blockchain;
-  let walletService: WalletService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -17,7 +15,6 @@ describe('WalletExplorer Component', () => {
     fixture = TestBed.createComponent(WalletExplorer);
     component = fixture.componentInstance;
     blockchain = TestBed.inject(Blockchain);
-    walletService = TestBed.inject(WalletService);
     await fixture.whenStable();
   });
 

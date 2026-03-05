@@ -1,14 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MempoolSidebar } from './mempool-sidebar';
 import { MempoolService } from '../../services/mempool.service';
-import { WalletService } from '../../services/wallet.service';
 import { Blockchain } from '../../services/blockchain.service';
 
 describe('MempoolSidebar Component', () => {
   let component: MempoolSidebar;
   let fixture: ComponentFixture<MempoolSidebar>;
   let mempoolService: MempoolService;
-  let walletService: WalletService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -18,7 +16,6 @@ describe('MempoolSidebar Component', () => {
     fixture = TestBed.createComponent(MempoolSidebar);
     component = fixture.componentInstance;
     mempoolService = TestBed.inject(MempoolService);
-    walletService = TestBed.inject(WalletService);
     await fixture.whenStable();
   });
 

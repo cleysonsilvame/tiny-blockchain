@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { WalletService } from './wallet.service';
 import { Blockchain } from './blockchain.service';
-import { MempoolService } from './mempool.service';
 import { Block, Transaction } from '../models/blockchain.model';
 
 describe('WalletService', () => {
